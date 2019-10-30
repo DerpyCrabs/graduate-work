@@ -1,6 +1,5 @@
-const { query } = require('./db')
+const { queryFile } = require('./db')
+require('dotenv').config()
 var fs = require('fs')
 
-query(fs.readFileSync(process.argv[2], 'utf8'), process.argv.slice(3)).then(
-  console.log
-)
+queryFile(process.argv[2], process.argv.slice(3)).then(console.log)

@@ -6,6 +6,7 @@ const resolvers = require('./resolvers')
 const jwt = require('express-jwt')
 const config = require('./config')
 const cors = require('cors')
+require('dotenv').config()
 
 const context = ({ req }) => {
   if (req.headers.authorization) {

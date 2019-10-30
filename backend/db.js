@@ -1,7 +1,7 @@
 const { host, username, password, database } = require('./config')
 const { Pool } = require('pg')
 
-let pool = new Pool({ host, user: username, password, database })
+let pool = new Pool({ host, user: username, database })
 
 module.exports = {
   query: pool.query,
