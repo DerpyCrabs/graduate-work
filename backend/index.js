@@ -8,11 +8,18 @@ const config = require('./config')
 const cors = require('cors')
 
 const context = ({ req }) => {
-  const token = req.headers.authorization || ''
-  try {
-    return ({ id, email } = jwt.verify(token.split(' ')[1], config.jwt_secret))
-  } catch (e) {
-    throw new Error('Authentication token is invalid')
+  if (req.headers.authorization) {
+    const token = req.headers.authorization || ''
+    try {
+      return ({ id, email } = jwt.verify(
+        token.split(' ')[1],
+        config.jwt_secret
+      ))
+    } catch (e) {
+      throw new Error('Authentication token is invalid')
+    }
+  } else {
+    return {}
   }
 }
 
