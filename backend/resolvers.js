@@ -13,6 +13,12 @@ const resolvers = {
         'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.id WHERE email = $1',
         [email]
       )).rows[0]
+    },
+    users: () => {
+      return query(
+        'SELECT email, roles.name as role FROM users INNER JOIN roles ON roles.id = users.id',
+        []
+      ).then(data => data.rows)
     }
   },
   Mutation: {
