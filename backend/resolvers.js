@@ -12,13 +12,13 @@ const resolvers = {
       return (await query(
         'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.id WHERE email = $1',
         [email]
-      )).rows[0]
+      ))[0]
     },
     users: () => {
       return query(
         'SELECT email, roles.name as role FROM users INNER JOIN roles ON roles.id = users.id',
         []
-      ).then(data => data.rows)
+      )
     }
   },
   Mutation: {
@@ -26,7 +26,7 @@ const resolvers = {
       let user = (await query(
         'SELECT email, password from users WHERE email = $1',
         [email]
-      )).rows[0]
+      ))[0]
       if (!user) {
         throw new Error('No user with that email')
       }
