@@ -4,7 +4,7 @@ const { Pool } = require('pg')
 let pool = new Pool({ host, user: username, database })
 
 module.exports = {
-  query: pool.query,
+  query: (path, args) => pool.query(path, args),
   queryFile: (path, args) =>
     pool.query(require('fs').readFileSync(path, 'utf8'), args)
 }
