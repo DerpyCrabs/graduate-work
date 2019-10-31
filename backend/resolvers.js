@@ -10,13 +10,13 @@ const resolvers = {
         throw new Error('You are not authenticated!')
       }
       return (await query(
-        'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.id WHERE email = $1',
+        'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.role WHERE email = $1',
         [email]
       ))[0]
     },
     users: () => {
       return query(
-        'SELECT email, roles.name as role FROM users INNER JOIN roles ON roles.id = users.id',
+        'SELECT email, roles.name as role FROM users JOIN roles ON roles.id = users.role',
         []
       )
     }
