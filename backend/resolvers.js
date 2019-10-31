@@ -9,8 +9,10 @@ const resolvers = {
       if (!email) {
         throw new Error('You are not authenticated!')
       }
-      return (await query('SELECT email from users WHERE email = $1', [email]))
-        .rows[0]
+      return (await query(
+        'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.id WHERE email = $1',
+        [email]
+      )).rows[0]
     }
   },
   Mutation: {

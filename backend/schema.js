@@ -1,6 +1,7 @@
 const typeDefs = `
   type User {
     email: String!
+    role: String!
   }
   type Query {
     me: User
