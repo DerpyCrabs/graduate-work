@@ -28,5 +28,5 @@ app.use(cors())
 server.applyMiddleware({ app })
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`The server is running on 0.0.0.0:${PORT}/${server.graphqlPath}`)
+  console.log(`The server is running on 0.0.0.0:${PORT}${server.graphqlPath}`)
 })
