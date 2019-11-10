@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const jsonwebtoken = require('jsonwebtoken')
 const config = require('./config')
 const { query, queryFile } = require('./db')
+const { WorkQueue, WorkQueueMutation } = require('./resolvers/WorkQueue.js')
 
 const resolvers = {
   Query: {
@@ -19,8 +20,13 @@ const resolvers = {
         'SELECT email, roles.name as role FROM users JOIN roles ON roles.id = users.role',
         []
       )
+    },
+    work_queue: () => {
+      return {}
     }
   },
+  WorkQueue,
+  WorkQueueMutation,
   Mutation: {
     login: async (_, { email, password }) => {
       let user = (await query(
@@ -49,6 +55,9 @@ const resolvers = {
       return jsonwebtoken.sign({ email: email }, config.jwt_secret, {
         expiresIn: '1d'
       })
+    },
+    work_queue: () => {
+      return {}
     }
   }
 }
