@@ -1,7 +1,7 @@
 let work = []
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const plugins = {
+let plugins = {
   '1': {
     enabled: true,
     name: 'C compiler',
@@ -37,6 +37,20 @@ module.exports = {
       Object.entries(plugins).map(([id, info]) => {
         return { id, ...info }
       })
+  },
+  PluginMutation: {
+    set_setting: ({ id }, { key, value }) => {
+      plugins[id].settings[key] = value
+      return { key, value }
+    },
+    enable_plugin: ({ id }) => {
+      plugins[id].enabled = true
+      return 'enabled'
+    },
+    disable_plugin: ({ id }) => {
+      plugins[id].enabled = false
+      return 'disabled'
+    }
   },
   WorkQueue: {
     queue: () => {

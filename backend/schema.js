@@ -45,7 +45,7 @@ const typeDefs = `
     check_work_result(id: String!): Boolean!
   }
   type PluginMutation {
-    set_setting(id: String!, key: String!, value: String!): PluginSetting
+    set_setting(key: String!, value: String!): PluginSetting
     enable_plugin: String
     disable_plugin: String
   }

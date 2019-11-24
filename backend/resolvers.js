@@ -63,6 +63,9 @@ const resolvers = {
     },
     work_queue: () => {
       return {}
+    },
+    plugin: (_, { id }) => {
+      return { id }
     }
   }
 }
