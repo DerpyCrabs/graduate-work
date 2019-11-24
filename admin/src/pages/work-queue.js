@@ -11,7 +11,9 @@ import {
   Dialog,
   DialogTitle,
   TextField,
-  Button
+  Button,
+  Select,
+  MenuItem
 } from '@material-ui/core'
 
 const WORK_QUERY = gql`
@@ -53,6 +55,52 @@ const ADD_WORK = gql`
     }
   }
 `
+
+const ThreadingSelect = () => {
+  const THREAD_QUERY = gql`
+    {
+      threads {
+        count
+      }
+    }
+  `
+  const { data, loading } = useQuery(THREAD_QUERY)
+  const [set_count] = useMutation(
+    gql`
+      mutation set_count($count: Int!) {
+        threads {
+          set_count(count: $count)
+        }
+      }
+    `
+  )
+
+  const setCountHandler = count => {
+    set_count({
+      variables: { count },
+      refetchQueries: [{ query: THREAD_QUERY }]
+    })
+  }
+  return (
+    <div>
+      {!loading && (
+        <div>
+          {'Thread count '}
+          <Select
+            value={data.threads.count}
+            onChange={e => setCountHandler(e.target.value)}
+          >
+            <MenuItem value={1}>1</MenuItem>
+            <MenuItem value={2}>2</MenuItem>
+            <MenuItem value={3}>3</MenuItem>
+            <MenuItem value={4}>4</MenuItem>
+          </Select>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function WorkQueue() {
   const { loading, data } = useQuery(WORK_QUERY)
   const [showDialog, setShowDialog] = React.useState(false)
@@ -80,6 +128,7 @@ export default function WorkQueue() {
       >
         Add work
       </Button>
+      <ThreadingSelect />
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
         <DialogTitle>Add work</DialogTitle>
         <TextField
