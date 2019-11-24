@@ -11,6 +11,7 @@ import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
 import { Tabs, Tab, TabPanel } from '@material-ui/core'
 import WorkQueue from './work-queue'
+import Plugins from './plugins'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -148,6 +149,7 @@ const Index = () => {
       <Router>
         <IndexPage path='/' />
         <WorkQueue path='/work-queue' />
+        <Plugins path='/plugins' />
       </Router>
     </div>
   )
