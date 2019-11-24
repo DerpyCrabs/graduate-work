@@ -1,5 +1,8 @@
 const runPlugin = (input, settings) => {
-  return { output: input, stats: [] }
+  return {
+    output: input,
+    stats: [`compiled c file with flags ${settings.flags}`]
+  }
 }
 
 module.exports = function(module_holder) {
@@ -9,6 +12,7 @@ module.exports = function(module_holder) {
     stage: 'Compilation',
     version: '0.0.1',
     settings: { flags: '-O0' },
+    stats: [],
     runPlugin: runPlugin
   }
 }

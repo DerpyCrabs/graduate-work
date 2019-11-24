@@ -1,5 +1,8 @@
 const runPlugin = (input, settings) => {
-  return { output: input, stats: [] }
+  return {
+    output: input,
+    stats: [`ran js file with ${settings.node_binary} binary`]
+  }
 }
 
 module.exports = function(module_holder) {
@@ -9,6 +12,7 @@ module.exports = function(module_holder) {
     stage: 'Running',
     version: '0.0.1',
     settings: { node_binary: 'node' },
+    stats: [],
     runPlugin: runPlugin
   }
 }

@@ -52,17 +52,25 @@ const typeDefs = `
   type Plugins {
     list: [PluginInfo!]!
   }
+  type Threads {
+    count: Int!
+  }
   type Query {
     me: User
     users: [User!]
     work_queue: WorkQueue!
     plugins: Plugins!
+    threads: Threads!
+  }
+  type ThreadsMutation {
+    set_count(count: Int!): Int!
   }
   type Mutation {
     signup (email: String!, password: String!): String
     login (email: String!, password: String!): String
     work_queue: WorkQueueMutation!
     plugin (id: String!): PluginMutation!
+    threads: ThreadsMutation!
   }
 `
 module.exports = typeDefs
