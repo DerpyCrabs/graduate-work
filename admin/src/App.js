@@ -19,7 +19,7 @@ const AdminApp = () => {
   return (
     <Suspense fallback={<div>loading...</div>}>
       <Router>
-        {data.token ? <Index path='/' /> : <Login path='/' />}
+        {data.token ? <Index path='/*' /> : <Login path='/' />}
         <Signup path='/signup' />
       </Router>
     </Suspense>

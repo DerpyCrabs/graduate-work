@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link as ReachLink } from '@reach/router'
+import { Link as ReachLink, Router } from '@reach/router'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -9,7 +9,8 @@ import Button from '@material-ui/core/Button'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
-
+import { Tabs, Tab, TabPanel } from '@material-ui/core'
+import WorkQueue from './work-queue'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -90,6 +91,15 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const IndexPage = () => {
+  const [tab, setTab] = React.useState(null)
+  return (
+    <Tabs value={tab} onChange={e => setTab(e.target.value)}>
+      <Tab label='Work queue' component={ReachLink} to='/work-queue' />
+      <Tab label='Plugins' component={ReachLink} to='/plugins' />
+    </Tabs>
+  )
+}
 const Index = () => {
   const [logout] = useMutation(LOGOUT)
   const [anchorEl, setAnchorEl] = React.useState(null)
@@ -108,32 +118,38 @@ const Index = () => {
     logout()
   }
   return (
-    <AppBar position="static">
-      <Toolbar className={classes.toolbar}>
-        <IconButton className={classes.homeIcon} component={ReachLink} to="/">
-          <HomeIcon />
-        </IconButton>
-        <Button
-          className={classes.button}
-          variant="outlined"
-          size="small"
-          onClick={handleClickMenu}
-        >
-          <React.Suspense fallback={<label>Loading...</label>}>
-            <UserProfile />
-          </React.Suspense>
-        </Button>
-        <Menu
-          id="simple-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleCloseMenu}
-        >
-          <MenuItem onClick={handleLogout}>Logout</MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+    <div>
+      <AppBar position='static'>
+        <Toolbar className={classes.toolbar}>
+          <IconButton className={classes.homeIcon} component={ReachLink} to='/'>
+            <HomeIcon />
+          </IconButton>
+          <Button
+            className={classes.button}
+            variant='outlined'
+            size='small'
+            onClick={handleClickMenu}
+          >
+            <React.Suspense fallback={<label>Loading...</label>}>
+              <UserProfile />
+            </React.Suspense>
+          </Button>
+          <Menu
+            id='simple-menu'
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+          >
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
+      <Router>
+        <IndexPage path='/' />
+        <WorkQueue path='/work-queue' />
+      </Router>
+    </div>
   )
 }
 export default Index
