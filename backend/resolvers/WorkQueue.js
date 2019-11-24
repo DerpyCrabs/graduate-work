@@ -85,7 +85,11 @@ module.exports = {
         }
       ]
       runWork(work.length - 1)
-      return work.length - 1
+      return {
+        id: work.length - 1,
+        ...work[work.length - 1],
+        type: { id: type_id }
+      }
     },
     check_work_result: (_, { id }) => {
       return work[id].stage === 'Done'

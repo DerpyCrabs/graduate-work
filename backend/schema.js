@@ -41,7 +41,7 @@ const typeDefs = `
     queue: [Work!]!
   }
   type WorkQueueMutation {
-    add_work(language: String!, type_id: String!, text: String!): Int!
+    add_work(language: String!, type_id: String!, text: String!): Work!
     check_work_result(id: String!): Boolean!
   }
   type PluginMutation {
