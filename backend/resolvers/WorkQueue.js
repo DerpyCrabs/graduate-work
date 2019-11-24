@@ -1,4 +1,8 @@
+const process = require('process')
+
 let work = []
+let worker_count = 0
+let max_worker_count = 1
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 let plugins = {}
@@ -18,7 +22,27 @@ const LoadPlugins = (path => {
 const pluginQueue = { '1': [{ id: 1 }, { id: 3 }], '2': [{ id: 2 }] }
 
 async function runWork(workId) {
-  await snooze(3000)
+  const plugin_queue = pluginQueue[work[workId].type_id]
+  for (const { id: plugin_id } of plugin_queue) {
+    const plugin = plugins[plugin_id]
+    if (!plugin.enabled) {
+      work[workId].result = 'Error'
+      work[workId].stage = 'Done'
+      return
+    }
+    while (worker_count === max_worker_count) {
+      await snooze(1000)
+    }
+    worker_count++
+    work[workId].stage = plugin.stage
+    const startTime = process.hrtime()
+    let { output, stats } = plugin.runPlugin(work[workId].text, plugin.settings)
+    await snooze(3000)
+    const diffTime = process.hrtime(startTime)
+    work[workId].text = output
+    worker_count--
+  }
+  work[workId].result = { result: work[workId].text }
   work[workId].stage = 'Done'
 }
 

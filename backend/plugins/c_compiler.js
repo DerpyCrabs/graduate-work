@@ -8,6 +8,7 @@ module.exports = function(module_holder) {
     name: 'C compiler',
     stage: 'Compilation',
     version: '0.0.1',
-    settings: { flags: '-O0' }
+    settings: { flags: '-O0' },
+    runPlugin: runPlugin
   }
 }

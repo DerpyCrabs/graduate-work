@@ -8,6 +8,7 @@ module.exports = function(module_holder) {
     name: 'Binary runner',
     stage: 'Running',
     version: '0.0.1',
-    settings: { exec_file: './a.out' }
+    settings: { exec_file: './a.out' },
+    runPlugin: runPlugin
   }
 }
