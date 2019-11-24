@@ -66,6 +66,15 @@ async function runWork(workId) {
 }
 
 module.exports = {
+  Threads: {
+    count: () => max_worker_count
+  },
+  ThreadsMutation: {
+    set_count: (_, { count }) => {
+      max_worker_count = count
+      return count
+    }
+  },
   Plugins: {
     list: () =>
       Object.entries(plugins).map(([id, info]) => {

@@ -24,6 +24,9 @@ const resolvers = {
         []
       )
     },
+    threads: () => {
+      return {}
+    },
     work_queue: () => {
       return {}
     },
@@ -66,6 +69,9 @@ const resolvers = {
     },
     plugin: (_, { id }) => {
       return { id }
+    },
+    threads: () => {
+      return {}
     }
   }
 }
