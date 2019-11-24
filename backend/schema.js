@@ -11,7 +11,7 @@ const typeDefs = `
     value: String!
   }
   type PluginInfo {
-    id: Int!
+    id: String!
     enabled: Boolean!
     name: String!
     stage: String!
@@ -20,7 +20,7 @@ const typeDefs = `
     stats: [String!]
   }
   type WorkType {
-    id: Int!
+    id: String!
     pluginQueue: [PluginInfo!]!
   }
   enum WorkStage {
@@ -31,7 +31,7 @@ const typeDefs = `
     Done
   }
   type Work {
-    id: Int!
+    id: String!
     language: String!
     type: WorkType!
     stage: WorkStage!
@@ -41,25 +41,28 @@ const typeDefs = `
     queue: [Work!]!
   }
   type WorkQueueMutation {
-    add_work(language: String!, type_id: Int!, text: String!): Int!
-    check_work_result(id: Int!): Boolean!
+    add_work(language: String!, type_id: String!, text: String!): Int!
+    check_work_result(id: String!): Boolean!
   }
   type PluginMutation {
-    set_setting(id: Int!, key: String!, value: String!): PluginSetting
+    set_setting(id: String!, key: String!, value: String!): PluginSetting
     enable_plugin: String
     disable_plugin: String
+  }
+  type Plugins {
+    list: [PluginInfo!]!
   }
   type Query {
     me: User
     users: [User!]
     work_queue: WorkQueue!
-    plugins: [PluginInfo!]!
+    plugins: Plugins!
   }
   type Mutation {
     signup (email: String!, password: String!): String
     login (email: String!, password: String!): String
     work_queue: WorkQueueMutation!
-    plugin (id: Int!): PluginMutation!
+    plugin (id: String!): PluginMutation!
   }
 `
 module.exports = typeDefs

@@ -2,18 +2,21 @@ const bcrypt = require('bcrypt')
 const jsonwebtoken = require('jsonwebtoken')
 const config = require('./config')
 const { query, queryFile } = require('./db')
-const { WorkQueue, WorkQueueMutation } = require('./resolvers/WorkQueue.js')
+const WorkQueue = require('./resolvers/WorkQueue.js')
 
 const resolvers = {
+  ...WorkQueue,
   Query: {
     me: async (_, args, { email }) => {
       if (!email) {
         throw new Error('You are not authenticated!')
       }
-      return (await query(
-        'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.role WHERE email = $1',
-        [email]
-      ))[0]
+      return (
+        await query(
+          'SELECT email, roles.name as role from users INNER JOIN roles on roles.id = users.role WHERE email = $1',
+          [email]
+        )
+      )[0]
     },
     users: () => {
       return query(
@@ -23,16 +26,18 @@ const resolvers = {
     },
     work_queue: () => {
       return {}
+    },
+    plugins: () => {
+      return {}
     }
   },
-  WorkQueue,
-  WorkQueueMutation,
   Mutation: {
     login: async (_, { email, password }) => {
-      let user = (await query(
-        'SELECT email, password from users WHERE email = $1',
-        [email]
-      ))[0]
+      let user = (
+        await query('SELECT email, password from users WHERE email = $1', [
+          email
+        ])
+      )[0]
       if (!user) {
         throw new Error('No user with that email')
       }
