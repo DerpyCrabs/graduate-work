@@ -1,5 +1,8 @@
 const runPlugin = (input, settings) => {
-  return { output: input, stats: [`ran ${settings.exec_file} file`] }
+  return {
+    output: input + ' run by binary runner',
+    stats: [`ran ${settings.exec_file} file`]
+  }
 }
 
 module.exports = function(module_holder) {

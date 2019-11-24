@@ -1,6 +1,6 @@
 const runPlugin = (input, settings) => {
   return {
-    output: input,
+    output: input + ' compiled by C compiler',
     stats: [`compiled c file with flags ${settings.flags}`]
   }
 }
