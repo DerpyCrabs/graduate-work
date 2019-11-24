@@ -1,29 +1,20 @@
 let work = []
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-let plugins = {
-  '1': {
-    enabled: true,
-    name: 'C compiler',
-    stage: 'Compilation',
-    version: '0.0.1',
-    settings: { flags: '-O0' }
-  },
-  '2': {
-    enabled: true,
-    name: 'JS runner',
-    stage: 'Running',
-    version: '0.0.1',
-    settings: { node_binary: 'node' }
-  },
-  '3': {
-    enabled: true,
-    name: 'Binary runner',
-    stage: 'Running',
-    version: '0.0.1',
-    settings: { exec_file: './a.out' }
-  }
-}
+let plugins = {}
+const LoadPlugins = (path => {
+  const fs = require('fs')
+  const path_module = require('path')
+  fs.readdir(path, function(err, files) {
+    var f,
+      l = files.length
+    for (var i = 0; i < l; i++) {
+      f = path_module.join(path, files[i])
+      require(f)(plugins)
+    }
+  })
+})(__dirname + '/../plugins')
+
 const pluginQueue = { '1': [{ id: 1 }, { id: 3 }], '2': [{ id: 2 }] }
 
 async function runWork(workId) {
