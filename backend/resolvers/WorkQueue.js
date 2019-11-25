@@ -20,7 +20,10 @@ const LoadPlugins = (path => {
   })
 })(__dirname + '/../plugins')
 
-const pluginQueue = { '1': [{ id: 1 }, { id: 3 }], '2': [{ id: 2 }] }
+const pluginQueue = {
+  '1': [{ id: 1 }, { id: 3 }, { id: 4 }],
+  '2': [{ id: 2 }, { id: 4 }]
+}
 
 async function logStats(pluginId, diffTime, input, output, stats) {
   await query(
