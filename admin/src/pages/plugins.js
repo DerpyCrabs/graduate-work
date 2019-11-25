@@ -127,7 +127,7 @@ const PluginStatsDialog = ({ stats }) => {
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
         <DialogTitle>Plugin statistics</DialogTitle>
         {stats.map(stat => (
-          <div>JSON.stringify(stat)</div>
+          <div>{JSON.stringify(stat)}</div>
         ))}
       </Dialog>
     </div>
