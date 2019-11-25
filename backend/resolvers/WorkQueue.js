@@ -49,18 +49,20 @@ async function runWork(workId) {
     let { output, stats } = plugin.runPlugin(work[workId].text, plugin.settings)
     await snooze(3000)
     const diffTime = process.hrtime(startTime)
-    await logStats(
-      plugin_id,
-      Math.round(diffTime[0] * 1000 + diffTime[1] / 1000000),
-      work[workId].text,
-      output,
-      stats.join(', ')
-    )
-    plugins[plugin_id].stats.push(
-      `Started job ${workId} at ${new Date().toLocaleString()} completed in ${Math.round(
-        diffTime[0] * 1000 + diffTime[1] / 1000000
-      )}`
-    )
+    if (plugin.settings.stats && plugin.settings.stats === 'true') {
+      await logStats(
+        plugin_id,
+        Math.round(diffTime[0] * 1000 + diffTime[1] / 1000000),
+        work[workId].text,
+        output,
+        stats.join(', ')
+      )
+      plugins[plugin_id].stats.push(
+        `Started job ${workId} at ${new Date().toLocaleString()} completed in ${Math.round(
+          diffTime[0] * 1000 + diffTime[1] / 1000000
+        )}`
+      )
+    }
     work[workId].text = output
     worker_count--
   }
