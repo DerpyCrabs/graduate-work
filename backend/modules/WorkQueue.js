@@ -1,5 +1,6 @@
 const process = require('process')
 const { query, queryFile } = require('../db')
+const { empty } = require('../utils')
 
 let work = []
 let worker_count = 0
@@ -210,25 +211,13 @@ module.exports = {
     }
   },
   Query: {
-    threads: () => {
-      return {}
-    },
-    work_queue: () => {
-      return {}
-    },
-    plugins: () => {
-      return {}
-    }
+    threads: empty,
+    work_queue: empty,
+    plugins: empty
   },
   Mutation: {
-    work_queue: () => {
-      return {}
-    },
-    plugin: (_, { id }) => {
-      return { id }
-    },
-    threads: () => {
-      return {}
-    }
+    work_queue: empty,
+    plugin: empty,
+    threads: empty
   }
 }
