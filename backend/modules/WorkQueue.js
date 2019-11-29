@@ -112,7 +112,6 @@ module.exports = {
   }
   type WorkQueueMutation {
     add_work(language: String!, type_id: String!, text: String!): Work!
-    check_work_result(id: String!): Boolean!
   }
   type PluginMutation {
     set_setting(key: String!, value: String!): PluginSetting
@@ -205,9 +204,6 @@ module.exports = {
         ...work[work.length - 1],
         type: { id: type_id }
       }
-    },
-    check_work_result: (_, { id }) => {
-      return work[id].stage === 'Done'
     }
   },
   Query: {
