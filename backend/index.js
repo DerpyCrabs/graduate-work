@@ -20,7 +20,11 @@ const context = ({ req }) => {
   }
 }
 
-const server = new ApolloServer({ typeDefs, resolvers, context })
+const server = new ApolloServer({
+  typeDefs,
+  resolvers: resolvers(__dirname + '/resolvers/'),
+  context
+})
 const app = express()
 
 const PORT = 3000
