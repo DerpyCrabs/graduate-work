@@ -25,4 +25,4 @@ module.exports = (path => {
     typeDefs: schemas,
     resolvers
   }
-})(__dirname + '/resolvers/')
+})(__dirname + '/modules/')
