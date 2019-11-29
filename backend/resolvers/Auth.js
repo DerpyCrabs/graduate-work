@@ -4,6 +4,20 @@ const config = require('../config')
 const { query, queryFile } = require('../db')
 
 module.exports = {
+  Schema: `
+  type User {
+    email: String!
+    role: String!
+  }
+  extend type Query {
+    me: User
+    users: [User!]
+  }
+  extend type Mutation {
+    signup (email: String!, password: String!): String
+    login (email: String!, password: String!): String
+  }
+  `,
   Query: {
     me: async (_, args, { email }) => {
       if (!email) {

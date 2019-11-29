@@ -1,8 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { ApolloServer } = require('apollo-server-express')
-const typeDefs = require('./schema')
-const resolvers = require('./resolvers')
+const { typeDefs, resolvers } = require('./graphql')
 const jwt = require('jsonwebtoken')
 const config = require('./config')
 const cors = require('cors')
@@ -22,7 +21,7 @@ const context = ({ req }) => {
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers: resolvers(__dirname + '/resolvers/'),
+  resolvers,
   context
 })
 const app = express()
