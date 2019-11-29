@@ -141,5 +141,27 @@ module.exports = {
     check_work_result: (_, { id }) => {
       return work[id].stage === 'Done'
     }
+  },
+  Query: {
+    threads: () => {
+      return {}
+    },
+    work_queue: () => {
+      return {}
+    },
+    plugins: () => {
+      return {}
+    }
+  },
+  Mutation: {
+    work_queue: () => {
+      return {}
+    },
+    plugin: (_, { id }) => {
+      return { id }
+    },
+    threads: () => {
+      return {}
+    }
   }
 }
