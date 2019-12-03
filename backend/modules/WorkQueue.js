@@ -33,7 +33,7 @@ async function logStats(pluginId, diffTime, input, output, stats) {
   )
 }
 async function runWork(workId) {
-  const plugin_queue = pluginQueue[work[workId].type_id]
+  const plugin_queue = pluginQueue[work[workId].type_id].plugins
   for (const { id: plugin_id } of plugin_queue) {
     const plugin = plugins[plugin_id]
     if (!plugin.enabled) {
