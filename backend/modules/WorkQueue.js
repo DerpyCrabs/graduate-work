@@ -22,8 +22,8 @@ const LoadPlugins = (path => {
 })(__dirname + '/../plugins')
 
 const pluginQueue = {
-  '1': [{ id: 1 }, { id: 3 }, { id: 4 }],
-  '2': [{ id: 2 }, { id: 4 }]
+  '1': { language: 'C', plugins: [{ id: 1 }, { id: 3 }, { id: 4 }] },
+  '2': { language: 'JS', plugins: [{ id: 2 }, { id: 4 }] }
 }
 
 async function logStats(pluginId, diffTime, input, output, stats) {
@@ -91,6 +91,7 @@ module.exports = {
   }
   type WorkType {
     id: String!
+    language: String!
     pluginQueue: [PluginInfo!]!
   }
   enum WorkStage {
@@ -102,7 +103,6 @@ module.exports = {
   }
   type Work {
     id: String!
-    language: String!
     type: WorkType!
     stage: WorkStage!
     result: WorkResult
@@ -181,8 +181,9 @@ module.exports = {
       })
   },
   WorkType: {
+    language: ({ id }) => pluginQueue[id].language,
     pluginQueue: ({ id }) =>
-      pluginQueue[id].map(({ id }) => {
+      pluginQueue[id].plugins.map(({ id }) => {
         return { id, ...plugins[id] }
       })
   },
@@ -192,7 +193,6 @@ module.exports = {
         ...work,
         {
           stage: 'WaitingForCompilation',
-          language,
           type_id,
           text,
           result: null
