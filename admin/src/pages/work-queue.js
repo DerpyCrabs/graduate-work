@@ -21,9 +21,9 @@ const WORK_QUERY = gql`
     work_queue {
       queue {
         id
-        language
         type {
           id
+          language
           pluginQueue {
             id
             enabled
@@ -166,19 +166,17 @@ export default function WorkQueue() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.work_queue.queue.map(
-                ({ id, language, type, stage, result }) => (
-                  <TableRow>
-                    <TableCell>{id}</TableCell>
-                    <TableCell>{language}</TableCell>
-                    <TableCell>{stage}</TableCell>
-                    <TableCell>
-                      {type.pluginQueue.map(plugin => plugin.name).join(', ')}
-                    </TableCell>
-                    <TableCell>{JSON.stringify(result)}</TableCell>
-                  </TableRow>
-                )
-              )}
+              {data.work_queue.queue.map(({ id, type, stage, result }) => (
+                <TableRow>
+                  <TableCell>{id}</TableCell>
+                  <TableCell>{type.language}</TableCell>
+                  <TableCell>{stage}</TableCell>
+                  <TableCell>
+                    {type.pluginQueue.map(plugin => plugin.name).join(', ')}
+                  </TableCell>
+                  <TableCell>{JSON.stringify(result)}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </Paper>
