@@ -21,6 +21,7 @@ const WORK_QUERY = gql`
     work_queue {
       queue {
         id
+        paused
         type {
           id
           language
@@ -52,6 +53,22 @@ const ADD_WORK = gql`
       add_work(language: $language, text: $text, type_id: $type_id) {
         id
       }
+    }
+  }
+`
+
+const PAUSE_WORK = gql`
+  mutation pause($work_id: String!) {
+    work_queue {
+      pause_work(work_id: $work_id)
+    }
+  }
+`
+
+const RESUME_WORK = gql`
+  mutation resume($work_id: String!) {
+    work_queue {
+      resume_work(work_id: $work_id)
     }
   }
 `
@@ -108,6 +125,8 @@ export default function WorkQueue() {
   const [type, setType] = React.useState('')
   const [text, setText] = React.useState('')
   const [addWork] = useMutation(ADD_WORK)
+  const [pauseWork] = useMutation(PAUSE_WORK)
+  const [resumeWork] = useMutation(RESUME_WORK)
   const addWorkHandler = () => {
     addWork({
       refetchQueries: [{ query: WORK_QUERY }],
@@ -117,6 +136,19 @@ export default function WorkQueue() {
     setType('')
     setText('')
     setShowDialog(false)
+  }
+  const handlePause = (paused, id) => {
+    if (paused) {
+      resumeWork({
+        refetchQueries: [{ query: WORK_QUERY }],
+        variables: { work_id: id }
+      })
+    } else {
+      pauseWork({
+        refetchQueries: [{ query: WORK_QUERY }],
+        variables: { work_id: id }
+      })
+    }
   }
   return (
     <div>
@@ -166,17 +198,26 @@ export default function WorkQueue() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.work_queue.queue.map(({ id, type, stage, result }) => (
-                <TableRow>
-                  <TableCell>{id}</TableCell>
-                  <TableCell>{type.language}</TableCell>
-                  <TableCell>{stage}</TableCell>
-                  <TableCell>
-                    {type.pluginQueue.map(plugin => plugin.name).join(', ')}
-                  </TableCell>
-                  <TableCell>{JSON.stringify(result)}</TableCell>
-                </TableRow>
-              ))}
+              {data.work_queue.queue.map(
+                ({ id, type, paused, stage, result }) => (
+                  <TableRow>
+                    <TableCell>{id}</TableCell>
+                    <TableCell>{type.language}</TableCell>
+                    <TableCell>
+                      {stage + ' '}
+                      {stage === 'Done' ? null : (
+                        <button onClick={() => handlePause(paused, id)}>
+                          {paused ? '|>' : '||'}
+                        </button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {type.pluginQueue.map(plugin => plugin.name).join(', ')}
+                    </TableCell>
+                    <TableCell>{JSON.stringify(result)}</TableCell>
+                  </TableRow>
+                )
+              )}
             </TableBody>
           </Table>
         </Paper>
