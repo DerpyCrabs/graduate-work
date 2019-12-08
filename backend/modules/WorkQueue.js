@@ -44,6 +44,10 @@ async function runWork(workId) {
     while (worker_count >= max_worker_count) {
       await snooze(1000)
     }
+    while (work[workId].paused === true) {
+      work[workId].stage = 'Paused'
+      await snooze(1000)
+    }
     worker_count++
     work[workId].stage = plugin.stage
     const startTime = process.hrtime()
@@ -95,6 +99,7 @@ module.exports = {
     pluginQueue: [PluginInfo!]!
   }
   enum WorkStage {
+    Paused
     WaitingForCompilation
     Compilation
     WaitingForRunning
@@ -105,6 +110,7 @@ module.exports = {
     id: String!
     type: WorkType!
     stage: WorkStage!
+    paused: Boolean!
     result: WorkResult
   }
   type WorkQueue {
@@ -112,6 +118,8 @@ module.exports = {
   }
   type WorkQueueMutation {
     add_work(language: String!, type_id: String!, text: String!): Work!
+    pause_work(work_id: String!): String!
+    resume_work(work_id: String!): String!
   }
   type PluginMutation {
     set_setting(key: String!, value: String!): PluginSetting
@@ -195,6 +203,7 @@ module.exports = {
           stage: 'WaitingForCompilation',
           type_id,
           text,
+          paused: false,
           result: null
         }
       ]
@@ -204,6 +213,14 @@ module.exports = {
         ...work[work.length - 1],
         type: { id: type_id }
       }
+    },
+    pause_work: (_, { work_id }) => {
+      work[work_id].paused = true
+      return 'paused'
+    },
+    resume_work: (_, { work_id }) => {
+      work[work_id].paused = false
+      return 'resumed'
     }
   },
   Query: {
