@@ -64,7 +64,7 @@ module.exports = {
         hashedPassword
       ])
       return jsonwebtoken.sign({ email: email }, config.jwt_secret, {
-        expiresIn: '1d'
+        expiresIn: '30d'
       })
     }
   }
