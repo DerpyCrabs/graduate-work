@@ -10,9 +10,9 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
 import { Tabs, Tab, TabPanel } from '@material-ui/core'
-import WorkQueue from './work-queue'
-import Plugins from './plugins'
 import { fade, makeStyles } from '@material-ui/core/styles'
+import Editor from './editor'
+import TestList from './test-list'
 
 const LOGOUT = gql`
   mutation logout {
@@ -93,13 +93,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const IndexPage = () => {
-  const [tab, setTab] = React.useState(null)
-  return (
-    <Tabs value={tab} onChange={e => setTab(e.target.value)}>
-      <Tab label='Work queue' component={ReachLink} to='/work-queue' />
-      <Tab label='Plugins' component={ReachLink} to='/plugins' />
-    </Tabs>
-  )
+  return <TestList />
 }
 const Index = () => {
   const [logout] = useMutation(LOGOUT)
@@ -148,8 +142,8 @@ const Index = () => {
       </AppBar>
       <Router>
         <IndexPage path='/' />
-        <WorkQueue path='/work-queue' />
-        <Plugins path='/plugins' />
+        <Editor path='/test1' />
+        <Editor path='/test2' />
       </Router>
     </div>
   )

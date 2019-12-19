@@ -54,7 +54,7 @@ module.exports = {
       }
 
       return jsonwebtoken.sign({ email: user.email }, config.jwt_secret, {
-        expiresIn: '1d'
+        expiresIn: '30d'
       })
     },
     signup: async (_, { email, password }) => {
