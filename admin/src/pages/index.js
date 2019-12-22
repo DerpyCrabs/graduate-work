@@ -12,6 +12,7 @@ import AppBar from '@material-ui/core/AppBar'
 import { Tabs, Tab, TabPanel } from '@material-ui/core'
 import WorkQueue from './work-queue'
 import Plugins from './plugins'
+import Users from './users'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -98,6 +99,7 @@ const IndexPage = () => {
     <Tabs value={tab} onChange={e => setTab(e.target.value)}>
       <Tab label='Work queue' component={ReachLink} to='/work-queue' />
       <Tab label='Plugins' component={ReachLink} to='/plugins' />
+      <Tab label='Users' component={ReachLink} to='/users' />
     </Tabs>
   )
 }
@@ -150,6 +152,7 @@ const Index = () => {
         <IndexPage path='/' />
         <WorkQueue path='/work-queue' />
         <Plugins path='/plugins' />
+        <Users path='/users' />
       </Router>
     </div>
   )
