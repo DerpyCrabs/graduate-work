@@ -23,8 +23,13 @@ const LoadPlugins = (path => {
 
 const pluginQueue = {
   '1': { language: 'C', plugins: [{ id: 1 }, { id: 3 }, { id: 4 }] },
-  '2': { language: 'JS', plugins: [{ id: 2 }, { id: 4 }] }
+  '2': { language: 'JS', plugins: [{ id: 2 }, { id: 4 }] },
+  '3': { language: 'Rust', plugins: [{ id: 7 }, { id: 3 }, { id: 4 }] },
+  '4': { language: 'Clojure', plugins: [{ id: 5 }, { id: 4 }] },
+  '5': { language: 'Python', plugins: [{ id: 6 }, { id: 4 }] }
 }
+
+let tests = [{ expected: '5', input: '5' }]
 
 async function logStats(pluginId, diffTime, input, output, stats) {
   await query(
@@ -42,10 +47,6 @@ async function runWork(workId) {
       return
     }
     while (worker_count >= max_worker_count) {
-      await snooze(1000)
-    }
-    while (work[workId].paused === true) {
-      work[workId].stage = 'Paused'
       await snooze(1000)
     }
     worker_count++
@@ -99,18 +100,17 @@ module.exports = {
     pluginQueue: [PluginInfo!]!
   }
   enum WorkStage {
-    Paused
     WaitingForCompilation
     Compilation
     WaitingForRunning
     Running
+    Testing
     Done
   }
   type Work {
     id: String!
     type: WorkType!
     stage: WorkStage!
-    paused: Boolean!
     result: WorkResult
   }
   type WorkQueue {
@@ -118,8 +118,6 @@ module.exports = {
   }
   type WorkQueueMutation {
     add_work(language: String!, type_id: String!, text: String!): Work!
-    pause_work(work_id: String!): String!
-    resume_work(work_id: String!): String!
   }
   type PluginMutation {
     set_setting(key: String!, value: String!): PluginSetting
@@ -203,7 +201,6 @@ module.exports = {
           stage: 'WaitingForCompilation',
           type_id,
           text,
-          paused: false,
           result: null
         }
       ]
@@ -213,14 +210,6 @@ module.exports = {
         ...work[work.length - 1],
         type: { id: type_id }
       }
-    },
-    pause_work: (_, { work_id }) => {
-      work[work_id].paused = true
-      return 'paused'
-    },
-    resume_work: (_, { work_id }) => {
-      work[work_id].paused = false
-      return 'resumed'
     }
   },
   Query: {
