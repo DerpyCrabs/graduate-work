@@ -28,7 +28,6 @@ const PLUGINS_QUERY = gql`
           key
           value
         }
-        stats
       }
     }
   }
@@ -115,24 +114,24 @@ const PluginSettingsDialog = ({ id, settings: initialSettings }) => {
   )
 }
 
-const PluginStatsDialog = ({ stats }) => {
-  const [showDialog, setShowDialog] = React.useState(false)
-  return (
-    <div>
-      {stats.length > 0 ? (
-        <Button onClick={() => setShowDialog(true)}>Show stats</Button>
-      ) : (
-        <div>No stats</div>
-      )}
-      <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-        <DialogTitle>Plugin statistics</DialogTitle>
-        {stats.map(stat => (
-          <div>{JSON.stringify(stat)}</div>
-        ))}
-      </Dialog>
-    </div>
-  )
-}
+// const PluginStatsDialog = ({ stats }) => {
+//   const [showDialog, setShowDialog] = React.useState(false)
+//   return (
+//     <div>
+//       {stats.length > 0 ? (
+//         <Button onClick={() => setShowDialog(true)}>Show stats</Button>
+//       ) : (
+//         <div>No stats</div>
+//       )}
+//       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
+//         <DialogTitle>Plugin statistics</DialogTitle>
+//         {stats.map(stat => (
+//           <div>{JSON.stringify(stat)}</div>
+//         ))}
+//       </Dialog>
+//     </div>
+//   )
+// }
 
 export default function Plugins() {
   const { loading, data } = useQuery(PLUGINS_QUERY)
@@ -140,16 +139,6 @@ export default function Plugins() {
   const [type, setType] = React.useState('')
   const [text, setText] = React.useState('')
   const [addWork] = useMutation(ADD_WORK)
-  // const addWorkHandler = () => {
-  //   addWork({
-  //     refetchQueries: [{ query: WORK_QUERY }],
-  //     variables: { language, type_id: type, text }
-  //   })
-  //   setLanguage('')
-  //   setType('')
-  //   setText('')
-  //   setShowDialog(false)
-  // }
   return (
     <div>
       <h3>Plugins</h3>
@@ -167,12 +156,11 @@ export default function Plugins() {
                 <TableCell>Stage</TableCell>
                 <TableCell>Version</TableCell>
                 <TableCell>Settings</TableCell>
-                <TableCell>Stats</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {data.plugins.list.map(
-                ({ id, enabled, name, stage, version, settings, stats }) => (
+                ({ id, enabled, name, stage, version, settings }) => (
                   <TableRow>
                     <TableCell>{id}</TableCell>
                     <TableCell>
@@ -183,9 +171,6 @@ export default function Plugins() {
                     <TableCell>{version}</TableCell>
                     <TableCell>
                       <PluginSettingsDialog id={id} settings={settings} />
-                    </TableCell>
-                    <TableCell>
-                      <PluginStatsDialog stats={stats} />
                     </TableCell>
                   </TableRow>
                 )

@@ -34,7 +34,6 @@ const WORK_QUERY = gql`
               key
               value
             }
-            stats
           }
         }
         stage
