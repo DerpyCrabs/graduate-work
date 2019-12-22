@@ -22,14 +22,28 @@ const LoadPlugins = (path => {
 })(__dirname + '/../plugins')
 
 const pluginQueue = {
-  '1': { language: 'C', plugins: [{ id: 1 }, { id: 3 }, { id: 4 }] },
-  '2': { language: 'JS', plugins: [{ id: 2 }, { id: 4 }] },
-  '3': { language: 'Rust', plugins: [{ id: 7 }, { id: 3 }, { id: 4 }] },
-  '4': { language: 'Clojure', plugins: [{ id: 5 }, { id: 4 }] },
-  '5': { language: 'Python', plugins: [{ id: 6 }, { id: 4 }] }
+  C: { plugins: [{ id: 1 }, { id: 3 }, { id: 4 }] },
+  JS: { plugins: [{ id: 2 }, { id: 4 }] },
+  Rust: { plugins: [{ id: 7 }, { id: 3 }, { id: 4 }] },
+  Clojure: { plugins: [{ id: 5 }, { id: 4 }] },
+  Python: { plugins: [{ id: 6 }, { id: 4 }] }
 }
 
-let tests = [{ expected: '5', input: '5' }]
+let tests = [
+  {
+    name: 'hello world',
+    description: 'print stdin to stdout',
+    tests: [
+      { expected: '5', input: '5' },
+      { expected: '6', input: '6' }
+    ]
+  },
+  {
+    name: 'duplicate',
+    description: 'duplicate stdin',
+    tests: [{ expected: '55', input: '5' }]
+  }
+]
 
 async function logStats(pluginId, diffTime, input, output, stats) {
   await query(
@@ -38,7 +52,7 @@ async function logStats(pluginId, diffTime, input, output, stats) {
   )
 }
 async function runWork(workId) {
-  const plugin_queue = pluginQueue[work[workId].type_id].plugins
+  const plugin_queue = pluginQueue[work[workId].language].plugins
   for (const { id: plugin_id } of plugin_queue) {
     const plugin = plugins[plugin_id]
     if (!plugin.enabled) {
@@ -72,6 +86,88 @@ async function runWork(workId) {
 }
 
 module.exports = {
+  Threads: {
+    count: () => max_worker_count
+  },
+  ThreadsMutation: {
+    set_count: (_, { count }) => {
+      max_worker_count = count
+      return count
+    }
+  },
+  Plugins: {
+    list: () =>
+      Object.entries(plugins).map(([id, info]) => {
+        return { id, ...info }
+      })
+  },
+  PluginMutation: {
+    set_setting: ({ id }, { key, value }) => {
+      plugins[id].settings[key] = value
+      return { key, value }
+    },
+    enable_plugin: ({ id }) => {
+      plugins[id].enabled = true
+      return 'enabled'
+    },
+    disable_plugin: ({ id }) => {
+      plugins[id].enabled = false
+      return 'disabled'
+    }
+  },
+  WorkQueue: {
+    queue: () => {
+      return work.map((work, id) => {
+        return {
+          id,
+          ...work,
+          type: { language: work.language, id: work.type_id }
+        }
+      })
+    }
+  },
+  PluginInfo: {
+    settings: ({ settings }) =>
+      Object.entries(settings).map(([key, value]) => {
+        return { key, value }
+      })
+  },
+  WorkType: {
+    pluginQueue: ({ id, language }) =>
+      pluginQueue[language].plugins.map(({ id }) => {
+        return { id, ...plugins[id] }
+      })
+  },
+  WorkQueueMutation: {
+    add_work: (_, { language, type_id, text }) => {
+      work = [
+        ...work,
+        {
+          stage: 'WaitingForCompilation',
+          type_id,
+          language,
+          text,
+          result: null
+        }
+      ]
+      runWork(work.length - 1)
+      return {
+        id: work.length - 1,
+        ...work[work.length - 1],
+        type: { id: type_id, language }
+      }
+    }
+  },
+  Query: {
+    threads: empty,
+    work_queue: empty,
+    plugins: empty
+  },
+  Mutation: {
+    work_queue: empty,
+    plugin: empty,
+    threads: empty
+  },
   Schema: `
   type WorkResult {
     result: String!
@@ -137,83 +233,5 @@ module.exports = {
     plugin (id: String!): PluginMutation!
     threads: ThreadsMutation!
   }
-  `,
-  Threads: {
-    count: () => max_worker_count
-  },
-  ThreadsMutation: {
-    set_count: (_, { count }) => {
-      max_worker_count = count
-      return count
-    }
-  },
-  Plugins: {
-    list: () =>
-      Object.entries(plugins).map(([id, info]) => {
-        return { id, ...info }
-      })
-  },
-  PluginMutation: {
-    set_setting: ({ id }, { key, value }) => {
-      plugins[id].settings[key] = value
-      return { key, value }
-    },
-    enable_plugin: ({ id }) => {
-      plugins[id].enabled = true
-      return 'enabled'
-    },
-    disable_plugin: ({ id }) => {
-      plugins[id].enabled = false
-      return 'disabled'
-    }
-  },
-  WorkQueue: {
-    queue: () => {
-      return work.map((work, id) => {
-        return { id, ...work, type: { id: work.type_id } }
-      })
-    }
-  },
-  PluginInfo: {
-    settings: ({ settings }) =>
-      Object.entries(settings).map(([key, value]) => {
-        return { key, value }
-      })
-  },
-  WorkType: {
-    language: ({ id }) => pluginQueue[id].language,
-    pluginQueue: ({ id }) =>
-      pluginQueue[id].plugins.map(({ id }) => {
-        return { id, ...plugins[id] }
-      })
-  },
-  WorkQueueMutation: {
-    add_work: (_, { language, type_id, text }) => {
-      work = [
-        ...work,
-        {
-          stage: 'WaitingForCompilation',
-          type_id,
-          text,
-          result: null
-        }
-      ]
-      runWork(work.length - 1)
-      return {
-        id: work.length - 1,
-        ...work[work.length - 1],
-        type: { id: type_id }
-      }
-    }
-  },
-  Query: {
-    threads: empty,
-    work_queue: empty,
-    plugins: empty
-  },
-  Mutation: {
-    work_queue: empty,
-    plugin: empty,
-    threads: empty
-  }
+  `
 }
