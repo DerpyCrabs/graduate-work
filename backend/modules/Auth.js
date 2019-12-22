@@ -16,6 +16,7 @@ module.exports = {
   extend type Mutation {
     signup (email: String!, password: String!): String
     login (email: String!, password: String!): String
+    change_role (email: String!, role: String!): String
   }
   `,
   Query: {
@@ -66,6 +67,11 @@ module.exports = {
       return jsonwebtoken.sign({ email: email }, config.jwt_secret, {
         expiresIn: '30d'
       })
-    }
+    },
+    change_role: async (_, { email, role }) =>
+      query(
+        'UPDATE users SET role = (SELECT id FROM roles WHERE name = $2 LIMIT 1) WHERE email = $1',
+        [email, role]
+      ).then(_ => 'success')
   }
 }
