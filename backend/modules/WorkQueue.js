@@ -29,8 +29,8 @@ const pluginQueue = {
   Python: { plugins: [{ id: 6 }, { id: 4 }] }
 }
 
-let tests = [
-  {
+let testsList = {
+  '1': {
     name: 'hello world',
     description: 'print stdin to stdout',
     tests: [
@@ -38,12 +38,12 @@ let tests = [
       { expected: '6', input: '6' }
     ]
   },
-  {
+  '2': {
     name: 'duplicate',
     description: 'duplicate stdin',
     tests: [{ expected: '55', input: '5' }]
   }
-]
+}
 
 async function logStats(pluginId, diffTime, input, output, stats) {
   await query(
@@ -53,35 +53,50 @@ async function logStats(pluginId, diffTime, input, output, stats) {
 }
 async function runWork(workId) {
   const plugin_queue = pluginQueue[work[workId].language].plugins
-  for (const { id: plugin_id } of plugin_queue) {
-    const plugin = plugins[plugin_id]
-    if (!plugin.enabled) {
-      work[workId].result = 'Error'
-      work[workId].stage = 'Done'
-      return
+  const tests = testsList[work[workId].type_id].tests
+  for (const test of tests) {
+    work[workId].pipe = {
+      code: work[workId].text,
+      input: test.input,
+      expected: test.expected
     }
-    while (worker_count >= max_worker_count) {
-      await snooze(1000)
+    for (const { id: plugin_id } of plugin_queue) {
+      const plugin = plugins[plugin_id]
+      if (!plugin.enabled) {
+        work[workId].result = 'Error'
+        work[workId].stage = 'Done'
+        return
+      }
+      while (worker_count >= max_worker_count) {
+        await snooze(1000)
+      }
+      worker_count++
+      work[workId].stage = plugin.stage
+      const startTime = process.hrtime()
+      let { output, stats } = plugin.runPlugin(
+        work[workId].pipe,
+        plugin.settings
+      )
+      await snooze(3000)
+      const diffTime = process.hrtime(startTime)
+      if (plugin.settings.stats && plugin.settings.stats === 'true') {
+        await logStats(
+          plugin_id,
+          Math.round(diffTime[0] * 1000 + diffTime[1] / 1000000),
+          JSON.stringify(work[workId].pipe),
+          output,
+          stats.join(', ')
+        )
+      }
+      work[workId].pipe = output
+      worker_count--
     }
-    worker_count++
-    work[workId].stage = plugin.stage
-    const startTime = process.hrtime()
-    let { output, stats } = plugin.runPlugin(work[workId].text, plugin.settings)
-    await snooze(3000)
-    const diffTime = process.hrtime(startTime)
-    if (plugin.settings.stats && plugin.settings.stats === 'true') {
-      await logStats(
-        plugin_id,
-        Math.round(diffTime[0] * 1000 + diffTime[1] / 1000000),
-        work[workId].text,
-        output,
-        stats.join(', ')
+    if (work[workId].pipe.result === 'false') {
+      work[workId].errors.push(
+        `expected ${test.expected} but got ${work[workId].pipe.output}`
       )
     }
-    work[workId].text = output
-    worker_count--
   }
-  work[workId].result = { result: work[workId].text }
   work[workId].stage = 'Done'
 }
 
@@ -147,7 +162,7 @@ module.exports = {
           type_id,
           language,
           text,
-          result: null
+          errors: []
         }
       ]
       runWork(work.length - 1)
@@ -169,9 +184,6 @@ module.exports = {
     threads: empty
   },
   Schema: `
-  type WorkResult {
-    result: String!
-  }
   type PluginSetting {
     key: String!
     value: String!
@@ -201,7 +213,7 @@ module.exports = {
     id: String!
     type: WorkType!
     stage: WorkStage!
-    result: WorkResult
+    errors: [String!]!
   }
   type WorkQueue {
     queue: [Work!]!

@@ -1,6 +1,6 @@
 const runPlugin = (input, settings) => {
   return {
-    output: input + ' run by JS runner',
+    output: { ...input, output: input.input },
     stats: [`ran js file with ${settings.node_binary} binary`]
   }
 }

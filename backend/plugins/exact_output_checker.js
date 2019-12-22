@@ -1,7 +1,7 @@
 const runPlugin = (input, settings) => {
   return {
-    output: `${input === settings.out}`,
-    stats: [`checked ${input} against ${settings.out}`]
+    output: { ...input, result: `${input.output === input.expected}` },
+    stats: [`checked ${input.output} against ${input.expected}`]
   }
 }
 
