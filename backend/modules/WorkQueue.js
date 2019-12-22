@@ -33,7 +33,7 @@ let testsList = {
   '1': {
     name: 'hello world',
     description: 'print stdin to stdout',
-    tests: [
+    checks: [
       { expected: '5', input: '5' },
       { expected: '6', input: '6' }
     ]
@@ -41,7 +41,7 @@ let testsList = {
   '2': {
     name: 'duplicate',
     description: 'duplicate stdin',
-    tests: [{ expected: '55', input: '5' }]
+    checks: [{ expected: '55', input: '5' }]
   }
 }
 
@@ -53,7 +53,7 @@ async function logStats(pluginId, diffTime, input, output, stats) {
 }
 async function runWork(workId) {
   const plugin_queue = pluginQueue[work[workId].language].plugins
-  const tests = testsList[work[workId].type_id].tests
+  const tests = testsList[work[workId].type_id].checks
   for (const test of tests) {
     work[workId].pipe = {
       code: work[workId].text,
@@ -173,15 +173,36 @@ module.exports = {
       }
     }
   },
+
   Query: {
     threads: empty,
     work_queue: empty,
-    plugins: empty
+    plugins: empty,
+    tests: () =>
+      Object.entries(testsList).map(([id, test]) => ({ id, ...test }))
+  },
+  TestsMutation: {
+    add_test: (_, { name, description }) => {
+      nextId = Object.keys(testsList).length + 1
+      testsList[nextId] = { name, description, checks: [] }
+      return testsList[nextId]
+    },
+    add_check: (_, { test_id, input, expected }) => {
+      testsList[test_id].checks.push({ input, expected })
+      return testsList[test_id]
+    },
+    remove_check: (_, { test_id, input, expected }) => {
+      testsList[test_id].checks = testsList[test_id].checks.filter(
+        test => test.input !== input || test.expected !== expected
+      )
+      return testsList[test_id]
+    }
   },
   Mutation: {
     work_queue: empty,
     plugin: empty,
-    threads: empty
+    threads: empty,
+    tests: empty
   },
   Schema: `
   type PluginSetting {
@@ -232,18 +253,35 @@ module.exports = {
   type Threads {
     count: Int!
   }
+  type TestCheck {
+    input: String!
+    expected: String!
+  }
+  type Test {
+    id: String!
+    name: String!
+    description: String!
+    checks: [TestCheck!]!
+  }
   extend type Query {
     work_queue: WorkQueue!
     plugins: Plugins!
     threads: Threads!
+    tests: [Test!]
   }
   type ThreadsMutation {
     set_count(count: Int!): Int!
+  }
+  type TestsMutation {
+    add_test (name: String!, description: String!): Test!
+    add_check (test_id: String!, input: String!, expected: String!): Test!
+    remove_check (test_id: String!, input: String!, expected: String!): Test!
   }
   extend type Mutation {
     work_queue: WorkQueueMutation!
     plugin (id: String!): PluginMutation!
     threads: ThreadsMutation!
+    tests: TestsMutation!
   }
   `
 }
