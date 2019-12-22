@@ -63,11 +63,6 @@ async function runWork(workId) {
         output,
         stats.join(', ')
       )
-      plugins[plugin_id].stats.push(
-        `Started job ${workId} at ${new Date().toLocaleString()} completed in ${Math.round(
-          diffTime[0] * 1000 + diffTime[1] / 1000000
-        )}`
-      )
     }
     work[workId].text = output
     worker_count--
@@ -92,7 +87,6 @@ module.exports = {
     stage: String!
     version: String!
     settings: [PluginSetting!]!
-    stats: [String!]
   }
   type WorkType {
     id: String!
