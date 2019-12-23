@@ -11,7 +11,6 @@ import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
 import { Tabs, Tab, TabPanel } from '@material-ui/core'
 import { fade, makeStyles } from '@material-ui/core/styles'
-import Editor from './editor'
 import TestList from './test-list'
 
 const LOGOUT = gql`
@@ -141,9 +140,7 @@ const Index = () => {
         </Toolbar>
       </AppBar>
       <Router>
-        <IndexPage path='/' />
-        <Editor path='/test1' />
-        <Editor path='/test2' />
+        <IndexPage path='/*' />
       </Router>
     </div>
   )

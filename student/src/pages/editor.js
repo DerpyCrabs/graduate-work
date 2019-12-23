@@ -16,7 +16,7 @@ import {
   MenuItem
 } from '@material-ui/core'
 
-export default function Editor({ test_id }) {
+export default function Editor({ test }) {
   const [language, setLanguage] = React.useState('javascript')
   const [code, setCode] = React.useState('console.log("hello")')
 

@@ -9,7 +9,24 @@ import {
   Button,
   Toolbar
 } from '@material-ui/core'
-import { Link } from '@reach/router'
+import { Link, Router } from '@reach/router'
+import { useQuery, useMutation } from '@apollo/react-hooks'
+import gql from 'graphql-tag'
+import Editor from './editor'
+
+const TESTS_QUERY = gql`
+  {
+    tests {
+      id
+      name
+      description
+      checks {
+        expected
+        input
+      }
+    }
+  }
+`
 
 function TestDescription({ test }) {
   return (
@@ -20,13 +37,14 @@ function TestDescription({ test }) {
         flexDirection: 'column'
       }}
     >
-      {test}
+      <h3>{test.name}</h3>
+      {test.description}
       <div style={{ flexGrow: 1 }} />
       <AppBar style={{ position: 'unset' }}>
         <Toolbar>
           <Typography>Completed: No</Typography>
           <div style={{ flexGrow: 1 }} />
-          <Button color='inherit' component={Link} to={`/${test}`}>
+          <Button color='inherit' component={Link} to={`/test-${test.id}`}>
             Begin test
           </Button>
         </Toolbar>
@@ -35,9 +53,8 @@ function TestDescription({ test }) {
   )
 }
 
-export default function TestList() {
-  const tabs = ['test1', 'test2']
-  const [tab, setTab] = React.useState(tabs[0])
+function TestList({ testList }) {
+  const [tab, setTab] = React.useState(testList[0].name)
   return (
     <Grid container>
       <Grid item xs={3}>
@@ -47,14 +64,31 @@ export default function TestList() {
           orientation='vertical'
           variant='scrollable'
         >
-          {tabs.map(tab => (
-            <Tab value={tab} label={tab} />
+          {testList.map(test => (
+            <Tab value={test.name} label={test.name} />
           ))}
         </Tabs>
       </Grid>
       <Grid item xs={9}>
-        {tabs.map(tab2 => tab === tab2 && <TestDescription test={tab2} />)}
+        {testList.map(
+          test => tab === test.name && <TestDescription test={test} />
+        )}
       </Grid>
     </Grid>
+  )
+}
+
+export default function Tests() {
+  const { loading, data } = useQuery(TESTS_QUERY)
+  if (loading) {
+    return <div>Loading</div>
+  }
+  return (
+    <Router>
+      <TestList testList={data.tests} path='/' />
+      {data.tests.map(test => (
+        <Editor path={`/test-${test.id}`} test={test} />
+      ))}
+    </Router>
   )
 }
