@@ -13,6 +13,7 @@ import { Link, Router } from '@reach/router'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
 import Editor from './editor'
+import TestDesc from '../components/test-description'
 
 const TESTS_QUERY = gql`
   {
@@ -37,9 +38,7 @@ function TestDescription({ test }) {
         flexDirection: 'column'
       }}
     >
-      <h3>{test.name}</h3>
-      {test.description}
-      <div style={{ flexGrow: 1 }} />
+      <TestDesc test={test} />
       <AppBar style={{ position: 'unset' }}>
         <Toolbar>
           <Typography>Completed: No</Typography>

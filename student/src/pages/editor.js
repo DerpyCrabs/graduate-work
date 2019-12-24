@@ -3,6 +3,8 @@ import AceEditor from 'react-ace'
 import 'ace-builds/src-noconflict/mode-javascript'
 import 'ace-builds/src-noconflict/mode-python'
 import 'ace-builds/src-noconflict/mode-c_cpp'
+import 'ace-builds/src-noconflict/mode-clojure'
+import 'ace-builds/src-noconflict/mode-rust'
 import 'ace-builds/src-noconflict/theme-github'
 import SettingsIcon from '@material-ui/icons/Settings'
 import {
@@ -15,17 +17,68 @@ import {
   Select,
   MenuItem
 } from '@material-ui/core'
+import TestDescription from '../components/test-description'
+import { useQuery, useMutation } from '@apollo/react-hooks'
+import gql from 'graphql-tag'
 
+const SUBMIT = gql`
+  mutation add_work($language: String!, $text: String!, $type_id: String!) {
+    work_queue {
+      add_work(language: $language, text: $text, type_id: $type_id) {
+        id
+      }
+    }
+  }
+`
+const RESULT_QUERY = gql`
+  {
+    work_queue {
+      queue {
+        id
+        stage
+        errors
+      }
+    }
+  }
+`
+const lang = {
+  JS: 'javascript',
+  C: 'c_cpp',
+  Clojure: 'clojure',
+  Python: 'python',
+  Rust: 'rust'
+}
 export default function Editor({ test }) {
-  const [language, setLanguage] = React.useState('javascript')
+  const [language, setLanguage] = React.useState('JS')
   const [code, setCode] = React.useState('console.log("hello")')
+  const [submitCode, { data: work_id }] = useMutation(SUBMIT)
+  const { data } = useQuery(RESULT_QUERY, {
+    pollInterval: 1000
+  })
+
+  let errors = null
+  let stage = null
+  if (work_id) {
+    console.log(data)
+    const work = data.work_queue.queue.filter(
+      work => work.id === work_id.work_queue.add_work.id
+    )
+    if (work.length === 1) {
+      errors = work[0].errors
+      stage = work[0].stage
+    }
+  }
+
+  const handleSubmit = () => {
+    submitCode({ variables: { text: code, language, type_id: test.id } })
+  }
 
   return (
     <>
       <Grid container style={{ height: 'calc(100vh - 128px)' }}>
         <Grid item xs={6}>
           <AceEditor
-            mode={language}
+            mode={lang[language]}
             theme='github'
             value={code}
             onChange={s => setCode(s)}
@@ -35,11 +88,55 @@ export default function Editor({ test }) {
           />
         </Grid>
         <Grid item xs={6} container direction='column'>
-          <Grid item xs={6} style={{ maxWidth: '100%' }}>
-            <Paper>Program output</Paper>
+          <Grid
+            item
+            xs={6}
+            style={{
+              maxWidth: '100%',
+              border: 'solid 1px black',
+              borderTop: 0,
+              borderRight: 0
+            }}
+          >
+            <Paper style={{ height: '100%', padding: 10 }}>
+              <TestDescription test={test} />
+            </Paper>
           </Grid>
-          <Grid item xs={6} style={{ maxWidth: '100%' }}>
-            <Paper>Test results</Paper>
+          <Grid
+            item
+            xs={6}
+            style={{
+              maxWidth: '100%',
+              border: 'solid 1px black',
+              borderTop: 0,
+              borderRight: 0,
+              borderBottom: 0
+            }}
+          >
+            <Paper style={{ height: '100%', padding: 10 }}>
+              {work_id && errors && stage && (
+                <div>
+                  {errors.length === 0 && stage === 'Done' ? (
+                    <div>You've completed the test</div>
+                  ) : (
+                    <div>
+                      {stage === 'Done' ? (
+                        <div>
+                          Got errors:
+                          <ul>
+                            {errors.map(error => (
+                              <li>{error}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <div>Current stage: {stage}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </Paper>
           </Grid>
         </Grid>
       </Grid>
@@ -54,16 +151,15 @@ export default function Editor({ test }) {
             onChange={e => setLanguage(e.target.value)}
             style={{ color: 'white' }}
           >
-            <MenuItem value='javascript'>JavaScript</MenuItem>
-            <MenuItem value='c_cpp'>C++</MenuItem>
-            <MenuItem value='python'>Python</MenuItem>
+            <MenuItem value='JS'>JavaScript</MenuItem>
+            <MenuItem value='C'>C++</MenuItem>
+            <MenuItem value='Python'>Python</MenuItem>
+            <MenuItem value='Clojure'>Clojure</MenuItem>
+            <MenuItem value='Rust'>Rust</MenuItem>
           </Select>
           <div style={{ flexGrow: 1 }} />
-          <Button edge='end' color='inherit'>
-            Run
-          </Button>
-          <Button edge='end' color='inherit'>
-            Test
+          <Button edge='end' color='inherit' onClick={handleSubmit}>
+            Submit
           </Button>
         </Toolbar>
       </AppBar>
