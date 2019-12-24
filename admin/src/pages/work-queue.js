@@ -37,9 +37,7 @@ const WORK_QUERY = gql`
           }
         }
         stage
-        result {
-          result
-        }
+        errors
       }
     }
   }
@@ -161,11 +159,11 @@ export default function WorkQueue() {
                 <TableCell>Language</TableCell>
                 <TableCell>Stage</TableCell>
                 <TableCell>Plugin Queue</TableCell>
-                <TableCell>Result</TableCell>
+                <TableCell>Errors</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.work_queue.queue.map(({ id, type, stage, result }) => (
+              {data.work_queue.queue.map(({ id, type, stage, errors }) => (
                 <TableRow>
                   <TableCell>{id}</TableCell>
                   <TableCell>{type.language}</TableCell>
@@ -173,7 +171,7 @@ export default function WorkQueue() {
                   <TableCell>
                     {type.pluginQueue.map(plugin => plugin.name).join(', ')}
                   </TableCell>
-                  <TableCell>{JSON.stringify(result)}</TableCell>
+                  <TableCell>{JSON.stringify(errors)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
