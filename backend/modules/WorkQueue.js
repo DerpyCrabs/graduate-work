@@ -187,6 +187,10 @@ module.exports = {
       testsList[nextId] = { name, description, checks: [] }
       return testsList[nextId]
     },
+    remove_test: (_, { test_id }) => {
+      delete testsList[test_id]
+      return 'removed'
+    },
     add_check: (_, { test_id, input, expected }) => {
       testsList[test_id].checks.push({ input, expected })
       return testsList[test_id]
@@ -274,6 +278,7 @@ module.exports = {
   }
   type TestsMutation {
     add_test (name: String!, description: String!): Test!
+    remove_test (test_id: String!): String!
     add_check (test_id: String!, input: String!, expected: String!): Test!
     remove_check (test_id: String!, input: String!, expected: String!): Test!
   }
