@@ -37,6 +37,56 @@ const sortUsers = users => {
   return copyUsers
 }
 
+const REGISTER_USER = gql`
+  mutation register_user($email: String!, $password: String!) {
+    signup(email: $email, password: $password)
+  }
+`
+
+function RegisterUserDialogButton() {
+  const [registerUser] = useMutation(REGISTER_USER)
+  const [showDialog, setShowDialog] = React.useState(false)
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const registerHandler = () => {
+    registerUser({
+      refetchQueries: [{ query: USERS_QUERY }],
+      variables: { email, password }
+    })
+    setEmail('')
+    setPassword('')
+    setShowDialog(false)
+  }
+
+  return (
+    <>
+      <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
+        <DialogTitle>Register user</DialogTitle>
+        <TextField
+          label='Email'
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <TextField
+          label='Password'
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <Button variant='contained' color='primary' onClick={registerHandler}>
+          Register
+        </Button>
+      </Dialog>
+      <Button
+        color='primary'
+        variant='contained'
+        onClick={() => setShowDialog(true)}
+      >
+        Register user
+      </Button>
+    </>
+  )
+}
+
 export default function Users() {
   const { loading, data } = useQuery(USERS_QUERY)
   const [changeRole] = useMutation(CHANGE_ROLE)
@@ -53,7 +103,8 @@ export default function Users() {
       {loading ? (
         <div>loading</div>
       ) : (
-        <Paper>
+        <Paper style={{ padding: 10 }}>
+          <RegisterUserDialogButton />
           <Table>
             <TableHead>
               <TableRow>
