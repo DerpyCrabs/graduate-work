@@ -38,7 +38,9 @@ function TestDescription({ test }) {
         flexDirection: 'column'
       }}
     >
-      <TestDesc test={test} />
+      <div style={{ padding: 10, flexGrow: 1 }}>
+        <TestDesc test={test} />
+      </div>
       <AppBar style={{ position: 'unset' }}>
         <Toolbar>
           <Typography>Completed: No</Typography>

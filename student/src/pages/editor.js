@@ -126,12 +126,8 @@ export default function Editor({ test }) {
                     <div>
                       {stage === 'Done' ? (
                         <div>
-                          Got errors:
-                          <ul>
-                            {errors.map(error => (
-                              <li>{error}</li>
-                            ))}
-                          </ul>
+                          Got {errors.length} errors in {test.checks.length}{' '}
+                          tests
                         </div>
                       ) : (
                         <div>Current stage: {stage}</div>
