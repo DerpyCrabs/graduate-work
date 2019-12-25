@@ -15,7 +15,9 @@ import {
   IconButton,
   Button,
   Select,
-  MenuItem
+  MenuItem,
+  Typography,
+  Slider
 } from '@material-ui/core'
 import TestDescription from '../components/test-description'
 import { useQuery, useMutation } from '@apollo/react-hooks'
@@ -50,6 +52,7 @@ const lang = {
 }
 export default function Editor({ test }) {
   const [language, setLanguage] = React.useState('JS')
+  const [fontSize, setFontSize] = React.useState(16)
   const [code, setCode] = React.useState('console.log("hello")')
   const [submitCode, { data: work_id }] = useMutation(SUBMIT)
   const { data } = useQuery(RESULT_QUERY, {
@@ -81,6 +84,7 @@ export default function Editor({ test }) {
             mode={lang[language]}
             theme='github'
             value={code}
+            fontSize={fontSize}
             onChange={s => setCode(s)}
             name='unique_id'
             height='100%'
@@ -157,6 +161,25 @@ export default function Editor({ test }) {
             <MenuItem value='Clojure'>Clojure</MenuItem>
             <MenuItem value='Rust'>Rust</MenuItem>
           </Select>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              paddingLeft: 16
+            }}
+          >
+            <Typography style={{ fontSize: 14, margin: 'auto' }} gutterBottom>
+              Font size
+            </Typography>
+            <Slider
+              value={fontSize}
+              onChange={(e, v) => setFontSize(v)}
+              step={2}
+              min={12}
+              max={24}
+              style={{ color: 'white', width: 128 }}
+            />
+          </div>
           <div style={{ flexGrow: 1 }} />
           <Button edge='end' color='inherit' onClick={handleSubmit}>
             Submit
