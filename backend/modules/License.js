@@ -15,6 +15,9 @@ function decrypt(text) {
 module.exports = {
   Query: {
     license: (_, { key }) => {
+      if (!key) {
+        return null
+      }
       let keyData = null
       try {
         keyData = JSON.parse(decrypt(key))
@@ -50,7 +53,7 @@ module.exports = {
     expiresOn: String!
   }
   extend type Query {
-    license (key: String!): License
+    license (key: String): License
   }
   `
 }

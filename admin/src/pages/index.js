@@ -13,6 +13,7 @@ import { Tabs, Tab, TabPanel } from '@material-ui/core'
 import WorkQueue from './work-queue'
 import Plugins from './plugins'
 import Users from './users'
+import License from './license'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -100,6 +101,7 @@ const IndexPage = () => {
       <Tab label='Work queue' component={ReachLink} to='/work-queue' />
       <Tab label='Plugins' component={ReachLink} to='/plugins' />
       <Tab label='Users' component={ReachLink} to='/users' />
+      <Tab label='License' component={ReachLink} to='/license' />
     </Tabs>
   )
 }
@@ -153,6 +155,7 @@ const Index = () => {
         <WorkQueue path='/work-queue' />
         <Plugins path='/plugins' />
         <Users path='/users' />
+        <License path='/license' />
       </Router>
     </div>
   )
