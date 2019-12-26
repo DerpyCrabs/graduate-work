@@ -22,6 +22,9 @@ module.exports = {
         console.log(e)
         return null
       }
+      if (new Date(keyData.expiresOn) < new Date()) {
+        return null
+      }
       const devices = usb.getDeviceList().map(dev => dev.deviceDescriptor)
       if (!keyData.vendor || !keyData.product) {
         return null
@@ -44,6 +47,7 @@ module.exports = {
     organization: String!
     threads: Int!
     graphics: Boolean!
+    expiresOn: String!
   }
   extend type Query {
     license (key: String!): License
