@@ -14,6 +14,7 @@ import WorkQueue from './work-queue'
 import Plugins from './plugins'
 import Users from './users'
 import License from './license'
+import Graphics from './graphics'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -102,6 +103,7 @@ const IndexPage = () => {
       <Tab label='Plugins' component={ReachLink} to='/plugins' />
       <Tab label='Users' component={ReachLink} to='/users' />
       <Tab label='License' component={ReachLink} to='/license' />
+      <Tab label='Graphics' component={ReachLink} to='/graphics' />
     </Tabs>
   )
 }
@@ -156,6 +158,7 @@ const Index = () => {
         <Plugins path='/plugins' />
         <Users path='/users' />
         <License path='/license' />
+        <Graphics path='/graphics' />
       </Router>
     </div>
   )
