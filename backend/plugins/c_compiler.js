@@ -1,6 +1,22 @@
 const runPlugin = (input, settings) => {
+  const execSync = require('child_process').execSync
+  const fileSync = require('tmp').fileSync
+  const nameSync = require('tmp').tmpNameSync
+  const fs = require('fs')
+
+  let tmpobj = fileSync({ postfix: '.c' })
+  fs.writeSync(tmpobj.fd, input.code)
+  fs.closeSync(tmpobj.fd)
+  let out = nameSync()
+  try {
+    output = execSync(`g++ -o ${out} ${tmpobj.name}`, {
+      encoding: 'ascii'
+    })
+  } catch (e) {
+    console.log(e)
+  }
   return {
-    output: input + ' compiled by C compiler',
+    output: { ...input, output: out },
     stats: [`compiled c file with flags ${settings.flags}`]
   }
 }

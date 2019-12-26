@@ -1,7 +1,24 @@
 const runPlugin = (input, settings) => {
+  const execSync = require('child_process').execSync
+  const fileSync = require('tmp').fileSync
+  const fs = require('fs')
+
+  let tmpobj = fileSync({ postfix: '.py' })
+  fs.writeSync(tmpobj.fd, input.code)
+  fs.closeSync(tmpobj.fd)
+  let output = ''
+  try {
+    output = execSync(`python ${tmpobj.name}`, {
+      input: input.input,
+      encoding: 'ascii'
+    })
+  } catch (e) {
+    console.log(e)
+  }
+
   return {
-    output: input + ' run by binary runner',
-    stats: [`ran ${settings.exec_file} file`]
+    output: { ...input, output: output.trim() },
+    stats: [`ran python file`]
   }
 }
 

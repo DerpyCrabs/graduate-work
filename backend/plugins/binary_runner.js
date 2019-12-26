@@ -1,6 +1,17 @@
 const runPlugin = (input, settings) => {
+  const execSync = require('child_process').execSync
+
+  let output = ''
+  try {
+    output = execSync(`chmod +x ${input.output} && ${input.output}`, {
+      input: input.input,
+      encoding: 'ascii'
+    })
+  } catch (e) {
+    console.log(e)
+  }
   return {
-    output: input + ' run by binary runner',
+    output: { ...input, output: output.trim() },
     stats: [`ran ${settings.exec_file} file`]
   }
 }

@@ -1,7 +1,23 @@
 const runPlugin = (input, settings) => {
+  const execSync = require('child_process').execSync
+  const fileSync = require('tmp').fileSync
+  const nameSync = require('tmp').tmpNameSync
+  const fs = require('fs')
+
+  let tmpobj = fileSync({ postfix: '.rs' })
+  fs.writeSync(tmpobj.fd, input.code)
+  fs.closeSync(tmpobj.fd)
+  let out = nameSync()
+  try {
+    output = execSync(`rustc -o ${out} ${tmpobj.name}`, {
+      encoding: 'ascii'
+    })
+  } catch (e) {
+    console.log(e)
+  }
   return {
-    output: input + ' run by binary runner',
-    stats: [`ran ${settings.exec_file} file`]
+    output: { ...input, output: out },
+    stats: [`compiled rust file with flags ${settings.flags}`]
   }
 }
 
