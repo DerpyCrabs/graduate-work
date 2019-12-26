@@ -39,7 +39,7 @@ export default function License() {
         onChange={e => setKey(e.target.value)}
       />
       <br />
-      {!loading && (
+      {!(!data || !data.license) ? (
         <div>
           Name: {data.license.name}
           <br />
@@ -52,6 +52,8 @@ export default function License() {
           Expires on: {data.license.expiresOn}
           <br />
         </div>
+      ) : (
+        <div>This license is invalid</div>
       )}
     </div>
   )
