@@ -47,7 +47,7 @@ export default function License() {
           <br />
           Max thread count: {data.license.threads}
           <br />
-          Graphics allowed: {data.license.graphics}
+          Graphics allowed: {JSON.stringify(data.license.graphics)}
           <br />
           Expires on: {data.license.expiresOn}
           <br />

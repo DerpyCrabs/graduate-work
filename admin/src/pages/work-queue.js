@@ -78,6 +78,7 @@ const ThreadingSelect = () => {
       refetchQueries: [{ query: THREAD_QUERY }]
     })
   }
+  const threads = localStorage.getItem('threads')
   return (
     <div>
       {!loading && (
@@ -87,10 +88,9 @@ const ThreadingSelect = () => {
             value={data.threads.count}
             onChange={e => setCountHandler(e.target.value)}
           >
-            <MenuItem value={1}>1</MenuItem>
-            <MenuItem value={2}>2</MenuItem>
-            <MenuItem value={3}>3</MenuItem>
-            <MenuItem value={4}>4</MenuItem>
+            {[...Array(parseInt(threads)).keys()].map(key => (
+              <MenuItem value={key + 1}>{key + 1}</MenuItem>
+            ))}
           </Select>
         </div>
       )}
