@@ -27,7 +27,7 @@ module.exports = function(module_holder) {
     name: 'Rust compiler',
     stage: 'Compiling',
     version: '0.0.1',
-    settings: { stats: true },
+    settings: { stats: 'true' },
     stats: [],
     runPlugin: runPlugin
   }

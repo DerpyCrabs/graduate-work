@@ -29,7 +29,7 @@ module.exports = function(module_holder) {
     name: 'JS runner',
     stage: 'Running',
     version: '0.0.1',
-    settings: { node_binary: 'node' },
+    settings: { node_binary: 'node', stats: 'true' },
     stats: [],
     runPlugin: runPlugin
   }

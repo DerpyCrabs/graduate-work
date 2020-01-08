@@ -30,6 +30,11 @@ module.exports = {
       query(
         'SELECT test_id, test_name, users.email as student_email, errors, done_at, language FROM student_stats JOIN users on student_id = users.id',
         []
+      ),
+    plugin_runtime: async () =>
+      query(
+        'SELECT plugin_id as id, plugin_name as name, start_time, diff_time as run_time FROM plugin_stats',
+        []
       )
   }
 }

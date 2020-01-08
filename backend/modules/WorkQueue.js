@@ -45,10 +45,10 @@ let testsList = {
   }
 }
 
-async function logStats(pluginId, diffTime, input, output, stats) {
+async function logStats(pluginId, pluginName, diffTime, input, output, stats) {
   await query(
-    'INSERT INTO plugin_stats (plugin_id, start_time, diff_time, input, output, stats) VALUES ($1, now(), $2, $3, $4, $5)',
-    [pluginId, diffTime, input, output, stats]
+    'INSERT INTO plugin_stats (plugin_id, plugin_name, start_time, diff_time, input, output, stats) VALUES ($1, $2, now(), $3, $4, $5, $6)',
+    [pluginId, pluginName, diffTime, input, output, stats]
   )
 }
 async function logStudentStats(
@@ -94,6 +94,7 @@ async function runWork(workId) {
       if (plugin.settings.stats && plugin.settings.stats === 'true') {
         await logStats(
           plugin_id,
+          plugin.name,
           Math.round(diffTime[0] * 1000 + diffTime[1] / 1000000),
           JSON.stringify(work[workId].pipe),
           output,

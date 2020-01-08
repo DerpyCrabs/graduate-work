@@ -28,7 +28,7 @@ module.exports = function(module_holder) {
     name: 'Python runner',
     stage: 'Running',
     version: '0.0.1',
-    settings: { stats: true },
+    settings: { stats: 'true' },
     stats: [],
     runPlugin: runPlugin
   }

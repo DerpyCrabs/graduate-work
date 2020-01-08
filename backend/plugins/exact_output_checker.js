@@ -11,7 +11,7 @@ module.exports = function(module_holder) {
     name: 'Exact output checker',
     stage: 'Testing',
     version: '0.0.1',
-    settings: { out: 'text ran js file with node binary' },
+    settings: { out: 'text ran js file with node binary', stats: 'true' },
     stats: [],
     runPlugin: runPlugin
   }
