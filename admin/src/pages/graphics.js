@@ -7,6 +7,7 @@ import {
   CardContent
 } from '@material-ui/core'
 import LanguageUsage from '../components/language-usage'
+import TestCompletion from '../components/test-completion'
 
 export default function Graphics() {
   const allowed = JSON.parse(localStorage.getItem('graphics'))
@@ -23,7 +24,9 @@ export default function Graphics() {
       </Card>
       <Card style={{ margin: 5 }}>
         <CardHeader title='Test completion' />
-        <CardContent>lang usage</CardContent>
+        <CardContent>
+          <TestCompletion />
+        </CardContent>
       </Card>
       <Card style={{ margin: 5 }}>
         <CardHeader title='Student activity' />
