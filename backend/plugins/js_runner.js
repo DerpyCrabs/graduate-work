@@ -9,7 +9,7 @@ const runPlugin = (input, settings) => {
 
   let output = ''
   try {
-    output = execSync(`clojure ${tmpobj.name}`, {
+    output = execSync(`node ${tmpobj.name}`, {
       input: input.input,
       encoding: 'ascii'
     })

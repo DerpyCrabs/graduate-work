@@ -1,0 +1,8 @@
+CREATE TABLE student_stats (
+  id SERIAL PRIMARY KEY,
+  student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  test_id VARCHAR NOT NULL,
+  done_at TIMESTAMP NOT NULL,
+  errors INTEGER NOT NULL,
+  language VARCHAR NOT NULL
+);

@@ -51,6 +51,12 @@ async function logStats(pluginId, diffTime, input, output, stats) {
     [pluginId, diffTime, input, output, stats]
   )
 }
+async function logStudentStats(studentEmail, testId, errorsCount, language) {
+  await query(
+    'INSERT INTO student_stats (student_id, test_id, done_at, errors, language) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, now(), $3, $4)',
+    [studentEmail, testId, errorsCount, language]
+  )
+}
 async function runWork(workId) {
   const plugin_queue = pluginQueue[work[workId].language].plugins
   const tests = testsList[work[workId].type_id].checks
@@ -77,7 +83,7 @@ async function runWork(workId) {
         work[workId].pipe,
         plugin.settings
       )
-      await snooze(3000)
+      await snooze(500)
       const diffTime = process.hrtime(startTime)
       if (plugin.settings.stats && plugin.settings.stats === 'true') {
         await logStats(
@@ -97,6 +103,12 @@ async function runWork(workId) {
       )
     }
   }
+  logStudentStats(
+    work[workId].student,
+    work[workId].type_id,
+    work[workId].errors.length,
+    work[workId].language
+  )
   work[workId].stage = 'Done'
 }
 
@@ -154,7 +166,7 @@ module.exports = {
       })
   },
   WorkQueueMutation: {
-    add_work: (_, { language, type_id, text }) => {
+    add_work: (_, { language, type_id, text }, { email }) => {
       work = [
         ...work,
         {
@@ -162,6 +174,7 @@ module.exports = {
           type_id,
           language,
           text,
+          student: email,
           errors: []
         }
       ]
