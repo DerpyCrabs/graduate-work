@@ -30,18 +30,49 @@ const pluginQueue = {
 }
 
 let testsList = {
+  '0': {
+    name: 'Introduction',
+    description:
+      'Write your very first program that prints "Hello, World!" in console.',
+    checks: [{ expected: 'Hello, World!', input: '' }]
+  },
   '1': {
-    name: 'hello world',
-    description: 'print stdin to stdout',
+    name: 'Console input',
+    description: 'Print contents of console input to console output.',
     checks: [
       { expected: '5', input: '5' },
-      { expected: '6', input: '6' }
+      { expected: 'test', input: 'test' }
     ]
   },
   '2': {
-    name: 'duplicate',
-    description: 'duplicate stdin',
+    name: 'Duplicate input',
+    description:
+      'Print contents of console input to console output duplicated.',
     checks: [{ expected: '55', input: '5' }]
+  },
+  '3': {
+    name: 'Fibonacci numbers',
+    description:
+      'Print fibonacci number at position from console input. Indexing starts at zero.',
+    checks: [
+      { expected: '0', input: '0' },
+      { expected: '8', input: '6' },
+      { expected: '1', input: '1' },
+      { expected: '21', input: '8' }
+    ]
+  },
+  '4': {
+    name: 'Arrays',
+    description:
+      'Print sum of numbers in input array. Array elements divided by commas.',
+    checks: [
+      { expected: '0', input: '' },
+      { expected: '9', input: '5,4' },
+      { expected: '40', input: '40' },
+      { expected: '10', input: '0,1,9' },
+      { expected: '20', input: '15,5' },
+      { expected: '21', input: '9,12' }
+    ]
   }
 }
 
@@ -89,7 +120,7 @@ async function runWork(workId) {
         work[workId].pipe,
         plugin.settings
       )
-      await snooze(500)
+      await snooze(100)
       const diffTime = process.hrtime(startTime)
       if (plugin.settings.stats && plugin.settings.stats === 'true') {
         await logStats(
