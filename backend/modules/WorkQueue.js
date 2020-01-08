@@ -165,6 +165,18 @@ module.exports = {
         return { id, ...plugins[id] }
       })
   },
+  Test: {
+    completed: async ({ id }, _, { email }) => {
+      if (!email) {
+        throw new Error('You must be logged in to get test completion info')
+      }
+      const tries = await query(
+        'SELECT errors FROM student_stats JOIN users ON student_id = users.id WHERE users.email = $1 AND student_stats.test_id = $2',
+        [email, id]
+      )
+      return tries.some(({ errors }) => errors === 0)
+    }
+  },
   WorkQueueMutation: {
     add_work: (_, { language, type_id, text }, { email }) => {
       work = [
@@ -279,6 +291,7 @@ module.exports = {
     name: String!
     description: String!
     checks: [TestCheck!]!
+    completed: Boolean
   }
   extend type Query {
     work_queue: WorkQueue!
