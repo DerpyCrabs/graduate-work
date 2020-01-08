@@ -25,6 +25,7 @@ const TESTS_QUERY = gql`
         expected
         input
       }
+      completed
     }
   }
 `
@@ -43,7 +44,7 @@ function TestDescription({ test }) {
       </div>
       <AppBar style={{ position: 'unset' }}>
         <Toolbar>
-          <Typography>Completed: No</Typography>
+          <Typography>Completed: {test.completed ? 'Yes' : 'No'}</Typography>
           <div style={{ flexGrow: 1 }} />
           <Button color='inherit' component={Link} to={`/test-${test.id}`}>
             Begin test
