@@ -51,10 +51,16 @@ async function logStats(pluginId, diffTime, input, output, stats) {
     [pluginId, diffTime, input, output, stats]
   )
 }
-async function logStudentStats(studentEmail, testId, errorsCount, language) {
+async function logStudentStats(
+  studentEmail,
+  testId,
+  testName,
+  errorsCount,
+  language
+) {
   await query(
-    'INSERT INTO student_stats (student_id, test_id, done_at, errors, language) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, now(), $3, $4)',
-    [studentEmail, testId, errorsCount, language]
+    'INSERT INTO student_stats (student_id, test_id, test_name, done_at, errors, language) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, $3, now(), $4, $5)',
+    [studentEmail, testId, testName, errorsCount, language]
   )
 }
 async function runWork(workId) {
@@ -106,6 +112,7 @@ async function runWork(workId) {
   logStudentStats(
     work[workId].student,
     work[workId].type_id,
+    testsList[work[workId].type_id].name,
     work[workId].errors.length,
     work[workId].language
   )
