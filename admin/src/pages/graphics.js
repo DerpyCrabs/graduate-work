@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardContent
 } from '@material-ui/core'
+import LanguageUsage from '../components/language-usage'
 
 export default function Graphics() {
   const allowed = JSON.parse(localStorage.getItem('graphics'))
@@ -16,7 +17,9 @@ export default function Graphics() {
     <div style={{ padding: 5, display: 'flex', flexDirection: 'column' }}>
       <Card style={{ margin: 5 }}>
         <CardHeader title='Language usage' />
-        <CardContent>lang usage</CardContent>
+        <CardContent>
+          <LanguageUsage />
+        </CardContent>
       </Card>
       <Card style={{ margin: 5 }}>
         <CardHeader title='Test completion' />
