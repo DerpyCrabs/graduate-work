@@ -38,7 +38,6 @@ export default function PluginExecutionTime() {
     value:
       arr.reduce((acc, val) => parseInt(val.run_time) + acc, 0.0) / arr.length
   }))
-  console.log(pieData)
 
   return (
     <div>
