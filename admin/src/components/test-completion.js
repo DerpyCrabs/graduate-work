@@ -34,7 +34,6 @@ export default function TestCompletion() {
     name: data.tests.find(val => val.id === test).name,
     value: (arr.filter(t => t.errors === 0).length / arr.length) * 100
   }))
-  console.log(pieData)
 
   return (
     <div>

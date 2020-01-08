@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core'
 import LanguageUsage from '../components/language-usage'
 import TestCompletion from '../components/test-completion'
+import PluginExecutionTime from '../components/plugin-execution-time'
 
 export default function Graphics() {
   const allowed = JSON.parse(localStorage.getItem('graphics'))
@@ -34,7 +35,9 @@ export default function Graphics() {
       </Card>
       <Card style={{ margin: 5 }}>
         <CardHeader title='Average plugin execution time' />
-        <CardContent>lang usage</CardContent>
+        <CardContent>
+          <PluginExecutionTime />
+        </CardContent>
       </Card>
     </div>
   )

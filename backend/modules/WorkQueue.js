@@ -120,7 +120,6 @@ async function runWork(workId) {
         work[workId].pipe,
         plugin.settings
       )
-      await snooze(100)
       const diffTime = process.hrtime(startTime)
       if (plugin.settings.stats && plugin.settings.stats === 'true') {
         await logStats(
