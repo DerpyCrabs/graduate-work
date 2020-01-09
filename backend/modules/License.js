@@ -4,6 +4,13 @@ const crypto = require('crypto')
 const key = Buffer.from('0123456701234567'.repeat(4), 'hex')
 const iv = Buffer.from('01230123'.repeat(4), 'hex')
 
+function encrypt(text) {
+  let cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+  let encrypted = cipher.update(text)
+  encrypted = Buffer.concat([encrypted, cipher.final()])
+  return encrypted.toString('hex')
+}
+
 function decrypt(text) {
   let encryptedText = Buffer.from(text, 'hex')
   let decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
@@ -42,7 +49,23 @@ module.exports = {
       }
 
       return null
-    }
+    },
+	  get_key: (_, {vendor, product}) => {
+
+  let date = new Date()
+  const keyData = {
+    name: "Administrator",
+    organization: "SibSAU",
+    threads: parseInt(10),
+    graphics: true,
+    vendor: vendor,
+    product: product,
+    expiresOn: new Date(
+      date.setTime(date.getTime() + 20 * 86400000)
+    )
+  }
+  return(encrypt(JSON.stringify(keyData)))
+	  }
   },
   Schema: `
   type License {
@@ -54,6 +77,7 @@ module.exports = {
   }
   extend type Query {
     license (key: String): License
+    get_key (vendor: String!, product: String!): String
   }
   `
 }
