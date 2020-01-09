@@ -42,7 +42,7 @@ export default function LanguageUsage() {
     percent,
     index
   }) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.2
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
     const y = cy + radius * Math.sin(-midAngle * RADIAN)
 
@@ -60,7 +60,7 @@ export default function LanguageUsage() {
   }
   return (
     <div>
-      <PieChart width={300} height={300}>
+      <PieChart width={400} height={400}>
         <Pie data={pieData} label={renderCustomizedLabel} labelLine={false}>
           {pieData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
