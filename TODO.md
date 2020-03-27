@@ -8,12 +8,14 @@
 
 # teacher
 
-- olympiad list page (name, stage, time before next stage, type, number of students, creator)
-- create olympiad dialog (start, finish, type, name, collaborators)
-- olympiad page (cancel, complete, change type (open/closed), collaborators)
+- olympiad list page (name, stage, time before next stage, type, number of students, creator) (p)
+- create olympiad dialog (start, finish, type, name, collaborators) (p)
+- olympiad page (cancel, complete, change type (open/closed), collaborators) (p)
 - olympiad tests
-- olympiad students (and add if closed)
+- olympiad students
+- olympiad student invite dialog
 - olympiad scores
+- olympiad code review
 
 # backend
 

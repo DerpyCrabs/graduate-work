@@ -11,7 +11,7 @@ import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
 import { Tabs, Tab, TabPanel } from '@material-ui/core'
 import Tests from './tests'
-import Students from './students'
+import Olympiads from './olympiads'
 import { fade, makeStyles } from '@material-ui/core/styles'
 
 const LOGOUT = gql`
@@ -96,8 +96,8 @@ const IndexPage = () => {
   const [tab, setTab] = React.useState(null)
   return (
     <Tabs value={tab} onChange={e => setTab(e.target.value)}>
-      <Tab label='Students' component={ReachLink} to='/students' />
-      <Tab label='Tests' component={ReachLink} to='/tests' />
+      <Tab label='Олимпиады' component={ReachLink} to='/olympiads' />
+      <Tab label='Задания' component={ReachLink} to='/tests' />
     </Tabs>
   )
 }
@@ -148,7 +148,7 @@ const Index = () => {
       </AppBar>
       <Router>
         <IndexPage path='/' />
-        <Students path='/students' />
+        <Olympiads path='/olympiads' />
         <Tests path='/tests' />
       </Router>
     </div>
