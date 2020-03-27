@@ -26,6 +26,8 @@ import {
   DialogActions
 } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import AddCircle from '@material-ui/icons/AddCircle'
+import RemoveCircle from '@material-ui/icons/RemoveCircle'
 import DateFnsUtils from '@date-io/date-fns'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 
@@ -99,7 +101,7 @@ export default function Olympiads() {
               </Typography>
             </ExpansionPanelDetails>
             <ExpansionPanelActions>
-              <Button size='small'>Задания</Button>
+              {olympiad.ended || <Tests />}
               {olympiad.ended ? (
                 <Button size='small'>Решения участников</Button>
               ) : (
@@ -325,4 +327,76 @@ function InviteCollaborator({ id }) {
 }
 
 function Solutions({ id }) {}
-function Tests({ id }) {}
+
+function Tests({ id }) {
+  const tests = [
+    {
+      name: 'Консольный ввод',
+      description: 'Описание задания',
+      added: false,
+      checks: [
+        { input: 5, output: 5 },
+        { input: 10, output: 10 }
+      ]
+    },
+    {
+      name: 'Числа Фиббоначи',
+      description: 'Описание задания',
+      added: true,
+      checks: [
+        { input: 5, output: 5 },
+        { input: 10, output: 10 }
+      ]
+    }
+  ]
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={_ => setOpen(true)}>
+        Задания
+      </Button>
+
+      <Dialog onClose={_ => setOpen(false)} open={open}>
+        <DialogTitle>Задания олимпиады</DialogTitle>
+        <DialogContent>
+          {tests.map(test => (
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+              <ExpansionPanel style={{ flexGrow: 1 }}>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant='h6' style={{ fontSize: '1rem' }}>
+                    {test.name}
+                  </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+                  <Typography>{test.description}</Typography>
+                  <br />
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Input</TableCell>
+                        <TableCell>Expected output</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {test.checks.map(check => (
+                        <TableRow>
+                          <TableCell>{check.input}</TableCell>
+                          <TableCell>{check.expected}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <div>
+                <Button>{test.added ? <RemoveCircle /> : <AddCircle />}</Button>
+              </div>
+            </div>
+          ))}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+function Review({ id }) {}

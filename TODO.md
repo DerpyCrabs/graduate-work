@@ -15,7 +15,7 @@
 - olympiad student invite dialog (p)
 - olympiad collaborators (p)
 - olympiad collaborators invite dialog (p)
-- olympiad tests
+- olympiad tests (p)
 - olympiad scores
 - olympiad code review
 
