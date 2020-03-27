@@ -102,11 +102,7 @@ export default function Olympiads() {
             </ExpansionPanelDetails>
             <ExpansionPanelActions>
               {olympiad.ended || <Tests />}
-              {olympiad.ended ? (
-                <Button size='small'>Решения участников</Button>
-              ) : (
-                <Students />
-              )}
+              {olympiad.ended ? <Scores /> : <Students />}
               {olympiad.creator === 'derpycrabs@gmail.com' ? (
                 <Collaborators />
               ) : null}
@@ -326,7 +322,50 @@ function InviteCollaborator({ id }) {
   )
 }
 
-function Solutions({ id }) {}
+function Scores({ id }) {
+  const scores = [
+    { name: 'Студент 1', score: 500, place: 1 },
+    { name: 'Студент 2', score: 550, place: 2 },
+    { name: 'Студент 3', score: 600, place: 3 }
+  ]
+
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={_ => setOpen(true)}>
+        Решения участников
+      </Button>
+
+      <Dialog onClose={_ => setOpen(false)} open={open}>
+        <DialogTitle>Решения участников</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Имя</TableCell>
+                <TableCell>Баллы</TableCell>
+                <TableCell>Предварительное место</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {scores.map(({ name, score, place }) => (
+                <TableRow key={name}>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>{score}</TableCell>
+                  <TableCell>{place}</TableCell>
+                  <TableCell>
+                    <Review />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 
 function Tests({ id }) {
   const tests = [
@@ -335,8 +374,8 @@ function Tests({ id }) {
       description: 'Описание задания',
       added: false,
       checks: [
-        { input: 5, output: 5 },
-        { input: 10, output: 10 }
+        { input: 5, expected: 5 },
+        { input: 10, expected: 10 }
       ]
     },
     {
@@ -344,8 +383,8 @@ function Tests({ id }) {
       description: 'Описание задания',
       added: true,
       checks: [
-        { input: 5, output: 5 },
-        { input: 10, output: 10 }
+        { input: 5, expected: 5 },
+        { input: 10, expected: 10 }
       ]
     }
   ]
@@ -399,4 +438,76 @@ function Tests({ id }) {
   )
 }
 
-function Review({ id }) {}
+function Review({ id }) {
+  const tests = [
+    {
+      name: 'Консольный ввод',
+      code: 'some code',
+      score: 0,
+      checks: [
+        { input: 5, expected: 5, actual: 7 },
+        { input: 10, expected: 10, actual: 10 }
+      ]
+    },
+    {
+      name: 'Числа Фиббоначи',
+      code: 'some code 2',
+      score: 500,
+      checks: [
+        { input: 5, expected: 10, actual: 5 },
+        { input: 10, expected: 10, actual: 10 }
+      ]
+    }
+  ]
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button color='primary' onClick={_ => setOpen(true)}>
+        Решение
+      </Button>
+
+      <Dialog onClose={_ => setOpen(false)} open={open}>
+        <DialogTitle>Решение студента "Студент 1"</DialogTitle>
+        <DialogContent>
+          {tests.map(test => (
+            <ExpansionPanel style={{ flexGrow: 1 }}>
+              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant='h6' style={{ fontSize: '1rem' }}>
+                  Задание "{test.name}"{' - '}
+                  {test.score === 0 ? 'решено не верно' : 'решено верно'}
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+                <Typography>Код решения:</Typography>
+                <Typography>{test.code}</Typography>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Ввод</TableCell>
+                      <TableCell>Ожидаемый вывод</TableCell>
+                      <TableCell>Вывод программы</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {test.checks.map(check => (
+                      <TableRow>
+                        <TableCell>{check.input}</TableCell>
+                        <TableCell>{check.expected}</TableCell>
+                        <TableCell>{check.actual}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <TextField
+                  value={test.score}
+                  type='number'
+                  label='Баллы за задание'
+                />
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          ))}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}

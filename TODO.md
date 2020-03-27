@@ -16,8 +16,9 @@
 - olympiad collaborators (p)
 - olympiad collaborators invite dialog (p)
 - olympiad tests (p)
-- olympiad scores
-- olympiad code review
+- olympiad scores (p)
+- olympiad code review (p)
+- add test cost
 
 # backend
 
