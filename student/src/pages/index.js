@@ -9,9 +9,20 @@ import Button from '@material-ui/core/Button'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 import AppBar from '@material-ui/core/AppBar'
-import { Tabs, Tab, TabPanel } from '@material-ui/core'
+import {
+  Tabs,
+  Tab,
+  TabPanel,
+  Table,
+  Grid,
+  TableHead,
+  TableRow,
+  TableBody,
+  TableCell
+} from '@material-ui/core'
 import { fade, makeStyles } from '@material-ui/core/styles'
 import TestList from './test-list'
+import Results from './results'
 
 const LOGOUT = gql`
   mutation logout {
@@ -92,7 +103,122 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const IndexPage = () => {
-  return <TestList />
+  const [tab, setTab] = React.useState('open')
+  const olympiads = [
+    {
+      stage: 'applying',
+      name: 'Олимпиада по программированию 1',
+      starts: '19:00 20 сентября 2020',
+      applied: true
+    },
+    {
+      stage: 'applying',
+      name: 'Олимпиада по программированию 2',
+      starts: '19:00 20 сентября 2020',
+      applied: false
+    },
+    {
+      stage: 'ongoing',
+      name: 'Олимпиада по программированию 3',
+      ends: '19:00 20 сентября 2020'
+    },
+    { stage: 'scoring', name: 'Олимпиада по программированию 4' },
+    { stage: 'done', name: 'Олимпиада 5' }
+  ]
+  return (
+    <Grid container>
+      <Tabs
+        centered
+        style={{ flexGrow: 1 }}
+        value={tab}
+        onChange={(_, v) => setTab(v)}
+      >
+        <Tab value='open' label='Будущие олимпиады'></Tab>
+        <Tab value='ongoing' label='Выполняемые'></Tab>
+        <Tab value='completed' label='Завершенные'></Tab>
+      </Tabs>
+      {tab === 'open' && (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Название</TableCell>
+              <TableCell>Дата начала</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {olympiads
+              .filter(({ stage }) => stage === 'applying')
+              .map(({ name, applied, starts }) => (
+                <TableRow>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>{starts}</TableCell>
+                  <TableCell>
+                    {applied ? (
+                      <Button disabled>Заявка на участие подана</Button>
+                    ) : (
+                      <Button variant='contained'>
+                        Подать заявку на участие
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      )}
+      {tab === 'ongoing' && (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Название</TableCell>
+              <TableCell>Дата окончания</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {olympiads
+              .filter(({ stage }) => stage === 'ongoing')
+              .map(({ name, ends }) => (
+                <TableRow>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>{ends}</TableCell>
+                  <TableCell>
+                    <Button variant='contained'>Перейти к выполнению</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      )}
+      {tab === 'completed' && (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Название</TableCell>
+              <TableCell>Результаты</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {olympiads
+              .filter(({ stage }) => stage === 'scoring' || stage === 'done')
+              .map(({ name, stage }) => (
+                <TableRow>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>
+                    {stage === 'scoring' ? (
+                      <div>Ожидание результатов</div>
+                    ) : (
+                      <Results id={5} />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      )}
+    </Grid>
+  )
 }
 const Index = () => {
   const [logout] = useMutation(LOGOUT)

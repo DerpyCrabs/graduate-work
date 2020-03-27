@@ -99,11 +99,11 @@ const IndexPage = () => {
   const [tab, setTab] = React.useState(null)
   return (
     <Tabs value={tab} onChange={e => setTab(e.target.value)}>
-      <Tab label='Work queue' component={ReachLink} to='/work-queue' />
-      <Tab label='Plugins' component={ReachLink} to='/plugins' />
-      <Tab label='Users' component={ReachLink} to='/users' />
-      <Tab label='License' component={ReachLink} to='/license' />
-      <Tab label='Graphics' component={ReachLink} to='/graphics' />
+      <Tab label='Очередь задач' component={ReachLink} to='/work-queue' />
+      <Tab label='Плагины' component={ReachLink} to='/plugins' />
+      <Tab label='Пользователи' component={ReachLink} to='/users' />
+      <Tab label='Управление лицензией' component={ReachLink} to='/license' />
+      <Tab label='Статистика' component={ReachLink} to='/graphics' />
     </Tabs>
   )
 }
