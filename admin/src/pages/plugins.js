@@ -141,7 +141,7 @@ export default function Plugins() {
   const [addWork] = useMutation(ADD_WORK)
   return (
     <div>
-      <h3>Plugins</h3>
+      <h3>Plugins list</h3>
       <br />
       {loading ? (
         <div>loading</div>

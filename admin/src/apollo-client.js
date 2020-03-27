@@ -5,7 +5,7 @@ import { HttpLink } from 'apollo-link-http'
 import { setContext } from 'apollo-link-context'
 
 const httpLink = new HttpLink({
-	uri: 'http://192.168.43.173:3000/graphql'
+  uri: 'http://localhost:3000/graphql'
 })
 
 const cache = new InMemoryCache()
@@ -26,5 +26,5 @@ const client = new ApolloClient({
   resolvers
 })
 
-cache.writeData({data: defaults })
+cache.writeData({ data: defaults })
 export default client
