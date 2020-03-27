@@ -18,7 +18,7 @@
 - olympiad tests (p)
 - olympiad scores (p)
 - olympiad code review (p)
-- add test cost
+- add test cost (p)
 
 # backend
 

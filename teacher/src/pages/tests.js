@@ -146,6 +146,12 @@ function AddTestDialogButton() {
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
+        <TextField // TODO make it work
+          label='Оценка в баллах'
+          type='number'
+          value={500}
+          onChange={e => setDescription(e.target.value)}
+        />
         <Button variant='contained' color='primary' onClick={addTestHandler}>
           Add
         </Button>
@@ -189,6 +195,11 @@ export default function Tests() {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
                 <Typography>{test.description}</Typography>
+                <TextField // TODO make it work
+                  label='Оценка в баллах'
+                  type='number'
+                  value={500}
+                />
                 <br />
                 <Table>
                   <TableHead>
