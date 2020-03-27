@@ -100,7 +100,7 @@ export default function Olympiads() {
               {olympiad.ended ? (
                 <Button size='small'>Решения участников</Button>
               ) : (
-                <Button size='small'>Участники</Button>
+                <Students />
               )}
               <Button size='small'>Проверяющие</Button>
               {olympiad.ended && (
@@ -169,8 +169,87 @@ function CreateOlympiadDialog() {
     </>
   )
 }
-function Students({ id }) {}
-function InviteStudent({ id }) {}
+function Students({ id }) {
+  const participants = [
+    { name: 'Участник 1', invited: null },
+    { name: 'Участник 2', invited: 'Учитель 1' }
+  ]
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={_ => setOpen(true)}>
+        Участники
+      </Button>
+
+      <Dialog onClose={_ => setOpen(false)} open={open}>
+        <DialogTitle>Участники олимпиады</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Имя</TableCell>
+                <TableCell>Приглашен?</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {participants.map(({ name, invited }) => (
+                <TableRow key={name}>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>
+                    {invited ? <span>{invited}</span> : <span>Нет</span>}
+                  </TableCell>
+                  <TableCell>
+                    <Button color='secondary'>Исключить</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+        <DialogActions>
+          <InviteStudent />
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+function InviteStudent({ id }) {
+  const participants = [
+    { name: 'Участник 1', invited: false },
+    { name: 'Участник 2', invited: true }
+  ]
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={_ => setOpen(true)}>
+        Пригласить участника
+      </Button>
+
+      <Dialog onClose={_ => setOpen(false)} open={open}>
+        <DialogTitle>Приглашение участника</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableBody>
+              {participants.map(({ name, invited }) => (
+                <TableRow key={name}>
+                  <TableCell>{name}</TableCell>
+                  <TableCell>
+                    {invited ? (
+                      <Button disabled>Приглашен</Button>
+                    ) : (
+                      <Button color='primary'>Пригласить</Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 function Collaborators({ id }) {}
 function Solutions({ id }) {}
 function Tests({ id }) {}

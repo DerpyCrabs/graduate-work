@@ -12,8 +12,8 @@
 - create olympiad dialog (start, finish, type, name, collaborators) (p)
 - olympiad page (cancel, complete, change type (open/closed), collaborators) (p)
 - olympiad tests
-- olympiad students
-- olympiad student invite dialog
+- olympiad students (p)
+- olympiad student invite dialog (p)
 - olympiad scores
 - olympiad code review
 
