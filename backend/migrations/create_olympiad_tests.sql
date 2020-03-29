@@ -1,0 +1,6 @@
+CREATE TABLE olympiad_tests (
+  id SERIAL PRIMARY KEY,
+  test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+  olympiad_id INTEGER NOT NULL REFERENCES olympiads(id) ON DELETE CASCADE,
+  coefficient REAL NOT NULL
+);

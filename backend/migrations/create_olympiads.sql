@@ -1,0 +1,9 @@
+CREATE TABLE olympiads (
+  id SERIAL PRIMARY KEY,
+  creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR NOT NULL,
+  start_at TIMESTAMP NOT NULL,
+  done_at TIMESTAMP NOT NULL,
+  recruitment_type INTEGER NOT NULL,
+  teams INTEGER NOT NULL
+);

@@ -47,10 +47,9 @@
 - olympiad tests
 - olympiad collaborators
 - olympiad participants
-- olympiad participant commands
+- olympiad participant teams
 - tests
 - test checks
 - olympiad score curves
 - olympiad submitted solutions
-- task solutions
-- olympiad submitted solution task solutions
+- olympiad test answers

@@ -1,0 +1,6 @@
+CREATE TABLE test_checks (
+  id SERIAL PRIMARY KEY,
+  test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+  input VARCHAR NOT NULL,
+  expected VARCHAR NOT NULL
+);
