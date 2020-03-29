@@ -5,6 +5,9 @@
 - olympiad apply to open (p)
 - olympiad taking (p)
 - olympiad results (p)
+- team making
+- team invites
+- support submitting full solution and reverting submitted solution
 
 # teacher
 
@@ -19,6 +22,11 @@
 - olympiad scores (p)
 - olympiad code review (p)
 - add test cost (p)
+- score curve
+- support teams
+- see versions of submitted solutions
+- test score coefficient (remove test score)
+- chart of scores of different submitted solutions
 
 # backend
 
@@ -27,4 +35,22 @@
 - olympiad tests CRUD
 - olympiad students CRUD
 - olympiad scores CRUD
+- tests CRUD
+- score curve
+- teams CRUD
+- solutions submitting and reverting
 - run tests in docker
+
+# database
+
+- olympiads
+- olympiad tests
+- olympiad collaborators
+- olympiad participants
+- olympiad participant commands
+- tests
+- test checks
+- olympiad score curves
+- olympiad submitted solutions
+- task solutions
+- olympiad submitted solution task solutions

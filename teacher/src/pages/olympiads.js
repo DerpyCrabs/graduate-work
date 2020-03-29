@@ -412,8 +412,8 @@ function Tests({ id }) {
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Input</TableCell>
-                        <TableCell>Expected output</TableCell>
+                        <TableCell>Ввод</TableCell>
+                        <TableCell>Ожидаемый вывод</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
