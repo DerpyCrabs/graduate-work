@@ -161,20 +161,6 @@ module.exports = {
         return { id, ...plugins[id] }
       })
   },
-  Test: {
-    completed: async ({ id }, _, { email }) => {
-      if (!email) {
-        throw new Error('You must be logged in to get test completion info')
-      }
-      const tries = await query(
-        'SELECT errors FROM student_stats JOIN users ON student_id = users.id WHERE users.email = $1 AND student_stats.test_id = $2',
-        [email, id]
-      )
-      return tries.some(({ errors }) => errors === 0)
-    },
-    checks: async ({ id }) =>
-      await query('SELECT * FROM test_checks WHERE test_id = $1', [id])
-  },
   WorkQueueMutation: {
     add_work: (_, { language, type_id, text }, { email }) => {
       work = [
@@ -200,35 +186,12 @@ module.exports = {
   Query: {
     threads: empty,
     work_queue: empty,
-    plugins: empty,
-    tests: async () => await query('SELECT * FROM tests', [])
-  },
-  TestsMutation: {
-    add_test: async (_, { name, description }) =>
-      await query(
-        'INSERT INTO tests (name, description) VALUES ($1, $2) RETURNING *',
-        [name, description]
-      ).then(rows => rows[0]),
-    add_check: async (_, { test_id, input, expected }) => {
-      await query(
-        'INSERT INTO test_checks (test_id, input, expected) VALUES ($1, $2, $3)',
-        [test_id, input, expected]
-      )
-      return 'done'
-    },
-    remove_check: async (_, { test_id, input, expected }) => {
-      await query(
-        'DELETE FROM test_checks WHERE test_id = $1 AND input = $2 AND expected = $3',
-        [test_id, input, expected]
-      )
-      return 'done'
-    }
+    plugins: empty
   },
   Mutation: {
     work_queue: empty,
     plugin: empty,
-    threads: empty,
-    tests: empty
+    threads: empty
   },
   Schema: `
   type PluginSetting {
@@ -279,36 +242,18 @@ module.exports = {
   type Threads {
     count: Int!
   }
-  type TestCheck {
-    input: String!
-    expected: String!
-  }
-  type Test {
-    id: String!
-    name: String!
-    description: String!
-    checks: [TestCheck!]!
-    completed: Boolean
-  }
   extend type Query {
     work_queue: WorkQueue!
     plugins: Plugins!
     threads: Threads!
-    tests: [Test!]
   }
   type ThreadsMutation {
     set_count(count: Int!): Int!
-  }
-  type TestsMutation {
-    add_test (name: String!, description: String!): Test!
-    add_check (test_id: String!, input: String!, expected: String!): String
-    remove_check (test_id: String!, input: String!, expected: String!): String
   }
   extend type Mutation {
     work_queue: WorkQueueMutation!
     plugin (id: String!): PluginMutation!
     threads: ThreadsMutation!
-    tests: TestsMutation!
   }
   `
 }
