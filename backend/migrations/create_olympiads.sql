@@ -6,5 +6,7 @@ CREATE TABLE olympiads (
   done_at TIMESTAMP NOT NULL,
   recruitment_type INTEGER NOT NULL,
   teams INTEGER NOT NULL,
-  ended BOOLEAN NOT NULL
+  ended BOOLEAN NOT NULL,
+  min_score INTEGER NOT NULL,
+  max_score INTEGER NOT NULL
 );

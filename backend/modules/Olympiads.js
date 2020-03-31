@@ -19,8 +19,8 @@ module.exports = {
     teams: Int
     collaborators: [User!]
     ended: Boolean!
-
     score_curve: ScoreCurve!
+
     tests: [OlympiadTest!]!
     participants: [Participant!]
   }
@@ -57,8 +57,9 @@ module.exports = {
     complete_olympiad(olympiad_id: String!): String
     invite_collaborator(olympiad_id: String!, user_email: String!): String
     remove_collaborator(olympiad_id: String!, user_email: String!): String
-
+    set_score_interval(olympiad_id: String!, min: Int!, max: Int!): String
     set_score_curve(olympiad_id: String!, curve: ScoreCurveInput!): String
+
     add_test(olympiad_id: String!, test_id: String!): String
     remove_test(olympiad_id: String!, test_id: String!): String
     set_test_score_coefficient(olympiad_id: String!, test_id: String!, score_coefficient: Float!): String
@@ -106,7 +107,24 @@ module.exports = {
       query(
         'SELECT * FROM olympiad_collaborators JOIN users ON collaborator_id = users.id WHERE olympiad_id = $1',
         [id]
+      ),
+    score_curve: async ({ id }) => {
+      const interval = (
+        await query(
+          'SELECT min_score, max_score FROM olympiads WHERE id = $1',
+          [id]
+        )
+      )[0]
+      const curve_points = await query(
+        'SELECT * FROM olympiad_score_curves WHERE olympiad_id = $1 ORDER BY place ASC',
+        [id]
       )
+      return {
+        min: interval.min_score,
+        max: interval.max_score,
+        points: curve_points
+      }
+    }
   },
 
   Mutation: { olympiads: empty },
@@ -116,17 +134,25 @@ module.exports = {
       { name, start_at, done_at, recruitment_type, teams },
       { email }
     ) => {
-      await query(
-        'INSERT INTO olympiads (creator_id, name, start_at, done_at, recruitment_type, teams, ended) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, to_timestamp($3), to_timestamp($4), $5, $6, FALSE)',
-        [
-          email,
-          name,
-          parseInt(start_at),
-          parseInt(done_at),
-          recruitment_type === 'Closed' ? 1 : 0,
-          teams
-        ]
-      )
+      const id = (
+        await query(
+          'INSERT INTO olympiads (creator_id, name, start_at, done_at, recruitment_type, teams, ended, min_score, max_score) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, to_timestamp($3), to_timestamp($4), $5, $6, FALSE, 50, 100) RETURNING olympiads.id as id',
+          [
+            email,
+            name,
+            parseInt(start_at),
+            parseInt(done_at),
+            recruitment_type === 'Closed' ? 1 : 0,
+            teams
+          ]
+        )
+      )[0].id
+      for (let i = 0; i < 5; i++) {
+        await query(
+          'INSERT INTO olympiad_score_curves (olympiad_id, place, coefficient) VALUES ($1, $2, 1.0)',
+          [id, i * 0.25]
+        )
+      }
       return 'done'
     },
     complete_olympiad: async (_, { olympiad_id }) =>
@@ -142,6 +168,23 @@ module.exports = {
       await query(
         'DELETE FROM olympiad_collaborators WHERE olympiad_id = $1 AND collaborator_id = (SELECT id FROM users WHERE email = $2 LIMIT 1)',
         [olympiad_id, user_email]
-      ).then(_ => 'done')
+      ).then(_ => 'done'),
+    set_score_interval: async (_, { olympiad_id, min, max }) =>
+      await query(
+        'UPDATE olympiads SET min_score = $1, max_score = $2 WHERE id = $3',
+        [min, max, olympiad_id]
+      ).then(_ => 'done'),
+    set_score_curve: async (_, { olympiad_id, curve }) => {
+      await query('DELETE FROM olympiad_score_curves WHERE olympiad_id = $1', [
+        olympiad_id
+      ])
+      for (const point of curve.points) {
+        await query(
+          'INSERT INTO olympiad_score_curves (olympiad_id, place, coefficient) VALUES ($1, $2, $3)',
+          [olympiad_id, point.place, point.coefficient]
+        )
+      }
+      return 'done'
+    }
   }
 }
