@@ -46,20 +46,10 @@ const ADD_TEST = gql`
   }
 `
 
-const REMOVE_TEST = gql`
-  mutation remove_test($test_id: String!) {
-    tests {
-      remove_test(test_id: $test_id)
-    }
-  }
-`
-
 const ADD_CHECK = gql`
   mutation add_check($test_id: String!, $input: String!, $expected: String!) {
     tests {
-      add_check(test_id: $test_id, input: $input, expected: $expected) {
-        name
-      }
+      add_check(test_id: $test_id, input: $input, expected: $expected)
     }
   }
 `
@@ -71,9 +61,7 @@ const REMOVE_CHECK = gql`
     $expected: String!
   ) {
     tests {
-      remove_check(test_id: $test_id, input: $input, expected: $expected) {
-        name
-      }
+      remove_check(test_id: $test_id, input: $input, expected: $expected)
     }
   }
 `
@@ -164,18 +152,11 @@ function AddTestDialogButton() {
 }
 export default function Tests() {
   const { loading, data } = useQuery(TESTS_QUERY)
-  const [removeTest] = useMutation(REMOVE_TEST)
   const [removeCheck] = useMutation(REMOVE_CHECK)
   const [addCheck] = useMutation(ADD_CHECK)
   const removeCheckHandler = (test_id, input, expected) => {
     removeCheck({
       variables: { test_id, input, expected },
-      refetchQueries: [{ query: TESTS_QUERY }]
-    })
-  }
-  const removeTestHandler = test_id => {
-    removeTest({
-      variables: { test_id },
       refetchQueries: [{ query: TESTS_QUERY }]
     })
   }
@@ -234,9 +215,6 @@ export default function Tests() {
               </ExpansionPanelDetails>
               <ExpansionPanelActions>
                 <AddCheckDialogButton test_id={test.id} />
-                <Button size='small' onClick={e => removeTestHandler(test.id)}>
-                  Remove test
-                </Button>
               </ExpansionPanelActions>
             </ExpansionPanel>
           ))}

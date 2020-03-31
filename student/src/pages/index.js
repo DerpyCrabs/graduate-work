@@ -21,7 +21,6 @@ import {
   TableCell
 } from '@material-ui/core'
 import { fade, makeStyles } from '@material-ui/core/styles'
-import TestList from './test-list'
 import Results from './results'
 
 const LOGOUT = gql`

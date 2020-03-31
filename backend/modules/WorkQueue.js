@@ -29,53 +29,6 @@ const pluginQueue = {
   Python: { plugins: [{ id: 6 }, { id: 4 }] }
 }
 
-let testsList = {
-  '0': {
-    name: 'Introduction',
-    description:
-      'Write your very first program that prints "Hello, World!" in console.',
-    checks: [{ expected: 'Hello, World!', input: '' }]
-  },
-  '1': {
-    name: 'Console input',
-    description: 'Print contents of console input to console output.',
-    checks: [
-      { expected: '5', input: '5' },
-      { expected: 'test', input: 'test' }
-    ]
-  },
-  '2': {
-    name: 'Duplicate input',
-    description:
-      'Print contents of console input to console output duplicated.',
-    checks: [{ expected: '55', input: '5' }]
-  },
-  '3': {
-    name: 'Fibonacci numbers',
-    description:
-      'Print fibonacci number at position from console input. Indexing starts at zero.',
-    checks: [
-      { expected: '0', input: '0' },
-      { expected: '8', input: '6' },
-      { expected: '1', input: '1' },
-      { expected: '21', input: '8' }
-    ]
-  },
-  '4': {
-    name: 'Arrays',
-    description:
-      'Print sum of numbers in input array. Array elements divided by commas.',
-    checks: [
-      { expected: '0', input: '' },
-      { expected: '9', input: '5,4' },
-      { expected: '40', input: '40' },
-      { expected: '10', input: '0,1,9' },
-      { expected: '20', input: '15,5' },
-      { expected: '21', input: '9,12' }
-    ]
-  }
-}
-
 async function logStats(pluginId, pluginName, diffTime, input, output, stats) {
   await query(
     'INSERT INTO plugin_stats (plugin_id, plugin_name, start_time, diff_time, input, output, stats) VALUES ($1, $2, now(), $3, $4, $5, $6)',
@@ -96,7 +49,9 @@ async function logStudentStats(
 }
 async function runWork(workId) {
   const plugin_queue = pluginQueue[work[workId].language].plugins
-  const tests = testsList[work[workId].type_id].checks
+  const tests = await query('SELECT * FROM test_checks WHERE test_id = $1', [
+    work[workId].type_id
+  ])
   for (const test of tests) {
     work[workId].pipe = {
       code: work[workId].text,
@@ -140,10 +95,13 @@ async function runWork(workId) {
       )
     }
   }
+  const test_name = (
+    await query('SELECT name FROM tests WHERE id = $1', [work[workId].type_id])
+  )[0].name
   logStudentStats(
     work[workId].student,
     work[workId].type_id,
-    testsList[work[workId].type_id].name,
+    test_name,
     work[workId].errors.length,
     work[workId].language
   )
@@ -213,7 +171,9 @@ module.exports = {
         [email, id]
       )
       return tries.some(({ errors }) => errors === 0)
-    }
+    },
+    checks: async ({ id }) =>
+      await query('SELECT * FROM test_checks WHERE test_id = $1', [id])
   },
   WorkQueueMutation: {
     add_work: (_, { language, type_id, text }, { email }) => {
@@ -241,28 +201,27 @@ module.exports = {
     threads: empty,
     work_queue: empty,
     plugins: empty,
-    tests: () =>
-      Object.entries(testsList).map(([id, test]) => ({ id, ...test }))
+    tests: async () => await query('SELECT * FROM tests', [])
   },
   TestsMutation: {
-    add_test: (_, { name, description }) => {
-      nextId = Object.keys(testsList).length + 1
-      testsList[nextId] = { name, description, checks: [] }
-      return testsList[nextId]
-    },
-    remove_test: (_, { test_id }) => {
-      delete testsList[test_id]
-      return 'removed'
-    },
-    add_check: (_, { test_id, input, expected }) => {
-      testsList[test_id].checks.push({ input, expected })
-      return testsList[test_id]
-    },
-    remove_check: (_, { test_id, input, expected }) => {
-      testsList[test_id].checks = testsList[test_id].checks.filter(
-        test => test.input !== input || test.expected !== expected
+    add_test: async (_, { name, description }) =>
+      await query(
+        'INSERT INTO tests (name, description) VALUES ($1, $2) RETURNING *',
+        [name, description]
+      ).then(rows => rows[0]),
+    add_check: async (_, { test_id, input, expected }) => {
+      await query(
+        'INSERT INTO test_checks (test_id, input, expected) VALUES ($1, $2, $3)',
+        [test_id, input, expected]
       )
-      return testsList[test_id]
+      return 'done'
+    },
+    remove_check: async (_, { test_id, input, expected }) => {
+      await query(
+        'DELETE FROM test_checks WHERE test_id = $1 AND input = $2 AND expected = $3',
+        [test_id, input, expected]
+      )
+      return 'done'
     }
   },
   Mutation: {
@@ -342,9 +301,8 @@ module.exports = {
   }
   type TestsMutation {
     add_test (name: String!, description: String!): Test!
-    remove_test (test_id: String!): String!
-    add_check (test_id: String!, input: String!, expected: String!): Test!
-    remove_check (test_id: String!, input: String!, expected: String!): Test!
+    add_check (test_id: String!, input: String!, expected: String!): String
+    remove_check (test_id: String!, input: String!, expected: String!): String
   }
   extend type Mutation {
     work_queue: WorkQueueMutation!
