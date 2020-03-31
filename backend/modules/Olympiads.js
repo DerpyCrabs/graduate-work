@@ -17,11 +17,12 @@ module.exports = {
     done_at: String!
     recruitment_type: RecruitmentType!
     teams: Int
-    participants: [Participant!]
     collaborators: [User!]
+    ended: Boolean!
+
     score_curve: ScoreCurve!
     tests: [OlympiadTest!]!
-    ended: Boolean!
+    participants: [Participant!]
   }
   enum RecruitmentType {
     Open
@@ -53,25 +54,34 @@ module.exports = {
   }
   type OlympiadsMutation {
     create_olympiad(name: String!, start_at: String!, done_at: String!, recruitment_type: RecruitmentType!, teams: Int!): String
-    invite_participant(olympiad_id: String!, user_email: String!): String
-    remove_participant(participant_id: String!): String
+    complete_olympiad(olympiad_id: String!): String
     invite_collaborator(olympiad_id: String!, user_email: String!): String
     remove_collaborator(olympiad_id: String!, user_email: String!): String
+
+    set_score_curve(olympiad_id: String!, curve: ScoreCurveInput!): String
     add_test(olympiad_id: String!, test_id: String!): String
     remove_test(olympiad_id: String!, test_id: String!): String
     set_test_score_coefficient(olympiad_id: String!, test_id: String!, score_coefficient: Float!): String
+    invite_participant(olympiad_id: String!, user_email: String!): String
+    remove_participant(participant_id: String!): String
     invite_to_team(participant_id: String!, user_email: String!): String
     create_team(olympiad_id: String!, name: String!): String
     accept_invite(olympiad_id: String!, participant_id: String!): String
     submit_test_answer(olympiad_id: String!, code: String!, test_id: String!): String
     submit_solution(olympiad_id: String!, test_answers_ids: [String!]!): String
     set_test_answer_score(test_answer_id: String!, score: Int!): String
-    complete_olympiad(olympiad_id: String!): String
   }
   type ScoreCurve {
     min: Int!
     max: Int!
     points: [ScoreCurvePoint!]!
+  }
+  input ScoreCurveInput {
+    points: [ScoreCurvePointInput!]!
+  }
+  input ScoreCurvePointInput {
+    place: Float!
+    coefficient: Float!
   }
   type ScoreCurvePoint {
     place: Float!
@@ -91,6 +101,11 @@ module.exports = {
     creator: async ({ creator_id }) =>
       query('SELECT * FROM users WHERE id = $1 LIMIT 1', [creator_id]).then(
         rows => rows[0]
+      ),
+    collaborators: async ({ id }) =>
+      query(
+        'SELECT * FROM olympiad_collaborators JOIN users ON collaborator_id = users.id WHERE olympiad_id = $1',
+        [id]
       )
   },
 
@@ -113,6 +128,20 @@ module.exports = {
         ]
       )
       return 'done'
-    }
+    },
+    complete_olympiad: async (_, { olympiad_id }) =>
+      await query('UPDATE olympiads SET ended = true WHERE id = $1', [
+        olympiad_id
+      ]).then(_ => 'done'),
+    invite_collaborator: async (_, { olympiad_id, user_email }) =>
+      await query(
+        'INSERT INTO olympiad_collaborators (olympiad_id, collaborator_id) VALUES ($1, (SELECT id FROM users WHERE email = $2 LIMIT 1))',
+        [olympiad_id, user_email]
+      ).then(_ => 'done'),
+    remove_collaborator: async (_, { olympiad_id, user_email }) =>
+      await query(
+        'DELETE FROM olympiad_collaborators WHERE olympiad_id = $1 AND collaborator_id = (SELECT id FROM users WHERE email = $2 LIMIT 1)',
+        [olympiad_id, user_email]
+      ).then(_ => 'done')
   }
 }
