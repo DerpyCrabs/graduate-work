@@ -52,7 +52,7 @@ module.exports = {
     score: Int!
   }
   type OlympiadsMutation {
-    create_olympiad(name: String!, start_at: String!, done_at: String!, recruitment_type: RecruitmentType!): String
+    create_olympiad(name: String!, start_at: String!, done_at: String!, recruitment_type: RecruitmentType!, teams: Int!): String
     invite_participant(olympiad_id: String!, user_email: String!): String
     remove_participant(participant_id: String!): String
     invite_collaborator(olympiad_id: String!, user_email: String!): String
@@ -78,7 +78,41 @@ module.exports = {
     coefficient: Float!
   }
   `,
-  Query: { olympiads: async () => query('SELECT * FROM olympiads', []) },
+  Query: {
+    olympiads: async () =>
+      query('SELECT * FROM olympiads', []).then(rows =>
+        rows.map(olympiad => ({
+          ...olympiad,
+          recruitment_type: olympiad.recruitment_type === 1 ? 'Closed' : 'Open'
+        }))
+      )
+  },
+  Olympiad: {
+    creator: async ({ creator_id }) =>
+      query('SELECT * FROM users WHERE id = $1 LIMIT 1', [creator_id]).then(
+        rows => rows[0]
+      )
+  },
 
-  Mutation: { olympiads: empty }
+  Mutation: { olympiads: empty },
+  OlympiadsMutation: {
+    create_olympiad: async (
+      _,
+      { name, start_at, done_at, recruitment_type, teams },
+      { email }
+    ) => {
+      await query(
+        'INSERT INTO olympiads (creator_id, name, start_at, done_at, recruitment_type, teams, ended) VALUES ((SELECT id FROM users WHERE email = $1 LIMIT 1), $2, to_timestamp($3), to_timestamp($4), $5, $6, FALSE)',
+        [
+          email,
+          name,
+          parseInt(start_at),
+          parseInt(done_at),
+          recruitment_type === 'Closed' ? 1 : 0,
+          teams
+        ]
+      )
+      return 'done'
+    }
+  }
 }
