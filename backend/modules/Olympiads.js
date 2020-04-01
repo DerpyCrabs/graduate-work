@@ -42,8 +42,8 @@ module.exports = {
     id: String!
     name: String!
     users: [ParticipantUser!]
-
     test_answers: [TestAnswer!]
+
     submitted_solutions: SubmittedSolution!
   }
   type ParticipantUser {
@@ -60,7 +60,7 @@ module.exports = {
     code: String!
     submitted_at: String!
     test: Test!
-    score: Int!
+    score: Int
   }
   type OlympiadsMutation {
     create_olympiad(name: String!, start_at: String!, done_at: String!, recruitment_type: RecruitmentType!, teams: Int!): String
@@ -78,10 +78,10 @@ module.exports = {
     apply(olympiad_id: String!): String
     invite_to_team(participant_id: String!, user_email: String!): String
     create_team(olympiad_id: String!, name: String!): String
-
     submit_test_answer(olympiad_id: String!, code: String!, test_id: String!): String
-    submit_solution(olympiad_id: String!, test_answers_ids: [String!]!): String
     set_test_answer_score(test_answer_id: String!, score: Int!): String
+
+    submit_solution(olympiad_id: String!, test_answers_ids: [String!]!): String
   }
   type ScoreCurve {
     min: Int!
@@ -116,7 +116,16 @@ module.exports = {
           'SELECT * FROM olympiad_participant_teams JOIN users ON participant_id = users.id WHERE olympiad_participant_id = $1',
           [id]
         )
-      ).map(user => ({ consent: user.consent, user }))
+      ).map(user => ({ consent: user.consent, user })),
+    test_answers: async ({ id }) =>
+      await query(
+        'SELECT * FROM olympiad_test_answers WHERE participant_id = $1',
+        [id]
+      )
+  },
+  TestAnswer: {
+    test: async ({ test_id }) =>
+      (await query('SELECT * FROM tests WHERE id = $1', [test_id]))[0]
   },
   Olympiad: {
     creator: async ({ creator_id }) =>
@@ -164,6 +173,28 @@ module.exports = {
 
   Mutation: { olympiads: empty },
   OlympiadsMutation: {
+    set_test_answer_score: async (_, { test_answer_id, score }) =>
+      query('UPDATE olympiad_test_answers SET score = $1 WHERE id = $2', [
+        score,
+        test_answer_id
+      ]).then(_ => 'done'),
+    submit_test_answer: async (
+      _,
+      { olympiad_id, code, test_id },
+      { email }
+    ) => {
+      const participant_id = (
+        await query(
+          'SELECT olympiad_participant_id FROM olympiad_participant_teams WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1)',
+          [email]
+        )
+      )[0].olympiad_participant_id
+      await query(
+        'INSERT INTO olympiad_test_answers (participant_id, test_id, code, score, submitted_at) VALUES ($1, $2, $3, NULL, now())',
+        [participant_id, test_id, code]
+      )
+      return 'done'
+    },
     invite_to_team: async (_, { participant_id, user_email }) => {
       const olympiad_id = (
         await query(
