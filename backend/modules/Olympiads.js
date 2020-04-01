@@ -20,13 +20,19 @@ module.exports = {
     collaborators: [User!]
     ended: Boolean!
     score_curve: ScoreCurve!
-
     tests: [OlympiadTest!]!
+
     participants: [Participant!]
+    leaderboard: [LeaderboardEntry!]
   }
   enum RecruitmentType {
     Open
     Closed
+  }
+  type LeaderboardEntry {
+    place: Int!
+    score: Int!
+    participant: Participant!
   }
   type OlympiadTest {
     score_coefficient: Float!
@@ -59,10 +65,10 @@ module.exports = {
     remove_collaborator(olympiad_id: String!, user_email: String!): String
     set_score_interval(olympiad_id: String!, min: Int!, max: Int!): String
     set_score_curve(olympiad_id: String!, curve: ScoreCurveInput!): String
-
     add_test(olympiad_id: String!, test_id: String!): String
     remove_test(olympiad_id: String!, test_id: String!): String
     set_test_score_coefficient(olympiad_id: String!, test_id: String!, score_coefficient: Float!): String
+
     invite_participant(olympiad_id: String!, user_email: String!): String
     remove_participant(participant_id: String!): String
     invite_to_team(participant_id: String!, user_email: String!): String
@@ -124,6 +130,16 @@ module.exports = {
         max: interval.max_score,
         points: curve_points
       }
+    },
+    tests: async ({ id }) => {
+      const tests = await query(
+        'SELECT * FROM olympiad_tests JOIN tests ON test_id = tests.id WHERE olympiad_id = $1',
+        [id]
+      )
+      return tests.map(test => ({
+        score_coefficient: test.coefficient,
+        test: test
+      }))
     }
   },
 
@@ -185,6 +201,24 @@ module.exports = {
         )
       }
       return 'done'
-    }
+    },
+    add_test: async (_, { olympiad_id, test_id }) =>
+      query(
+        'INSERT INTO olympiad_tests (test_id, olympiad_id, coefficient) VALUES ($1, $2, 1.0)',
+        [test_id, olympiad_id]
+      ).then(_ => 'done'),
+    remove_test: async (_, { olympiad_id, test_id }) =>
+      query(
+        'DELETE FROM olympiad_tests WHERE test_id = $1 AND olympiad_id = $2',
+        [test_id, olympiad_id]
+      ).then(_ => 'done'),
+    set_test_score_coefficient: async (
+      _,
+      { olympiad_id, test_id, score_coefficient }
+    ) =>
+      query(
+        'UPDATE olympiad_tests SET coefficient = $1 WHERE test_id = $2 AND olympiad_id = $3',
+        [score_coefficient, test_id, olympiad_id]
+      ).then(_ => 'done')
   }
 }
