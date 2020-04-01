@@ -76,9 +76,9 @@ module.exports = {
     remove_participant(participant_id: String!): String
     accept_invite(participant_id: String!): String
     apply(olympiad_id: String!): String
-
     invite_to_team(participant_id: String!, user_email: String!): String
     create_team(olympiad_id: String!, name: String!): String
+
     submit_test_answer(olympiad_id: String!, code: String!, test_id: String!): String
     submit_solution(olympiad_id: String!, test_answers_ids: [String!]!): String
     set_test_answer_score(test_answer_id: String!, score: Int!): String
@@ -164,6 +164,57 @@ module.exports = {
 
   Mutation: { olympiads: empty },
   OlympiadsMutation: {
+    invite_to_team: async (_, { participant_id, user_email }) => {
+      const olympiad_id = (
+        await query(
+          'SELECT olympiad_id FROM olympiad_participants WHERE id = $1',
+          [participant_id]
+        )
+      )[0].olympiad_id
+      const olympiad = (
+        await query('SELECT teams FROM olympiads WHERE id = $1', [olympiad_id])
+      )[0]
+      if (olympiad.teams === 1) {
+        throw new Error('Cannot use teams for this olympiad')
+      }
+      const current_members = await query(
+        'SELECT * FROM olympiad_participant_teams WHERE olympiad_participant_id = $1 AND consent = true',
+        [participant_id]
+      )
+      if (current_members.length === olympiad.teams) {
+        throw new Error('Cannot invite more members')
+      }
+      await query(
+        'INSERT INTO olympiad_participant_teams (consent, olympiad_participant_id, participant_id) VALUES (false, $1, (SELECT id FROM users WHERE email = $2 LIMIT 1))',
+        [participant_id, user_email]
+      )
+      return 'done'
+    },
+    create_team: async (_, { olympiad_id, name }, { email }) => {
+      const olympiad = (
+        await query(
+          'SELECT recruitment_type, teams FROM olympiads WHERE id = $1',
+          [olympiad_id]
+        )
+      )[0]
+      if (olympiad.recruitment_type !== 0) {
+        throw new Error('Cannot apply to closed olympiad')
+      }
+      if (olympiad.teams === 1) {
+        throw new Error('Cannot create teams for this olympiad')
+      }
+      const olympiad_participant_id = (
+        await query(
+          'INSERT INTO olympiad_participants (name, olympiad_id) VALUES ($1, $2) RETURNING id',
+          [name, olympiad_id]
+        )
+      )[0].id
+      await query(
+        'INSERT INTO olympiad_participant_teams (consent, olympiad_participant_id, participant_id) VALUES (true, $1, (SELECT id FROM users WHERE email = $2 LIMIT 1))',
+        [olympiad_participant_id, email]
+      )
+      return 'done'
+    },
     remove_participant: async (_, { participant_id }) => {
       await query(
         'DELETE FROM olympiad_participant_teams WHERE olympiad_participant_id = $1',
@@ -194,7 +245,26 @@ module.exports = {
       return 'done'
     },
     accept_invite: async (_, { participant_id }) => {
-      query(
+      const olympiad_id = (
+        await query(
+          'SELECT olympiad_id FROM olympiad_participants WHERE id = $1',
+          [participant_id]
+        )
+      )[0].olympiad_id
+      const olympiad = (
+        await query(
+          'SELECT recruitment_type, teams FROM olympiads WHERE id = $1',
+          [olympiad_id]
+        )
+      )[0]
+      const current_members = await query(
+        'SELECT * FROM olympiad_participant_teams WHERE olympiad_participant_id = $1 AND consent = true',
+        [participant_id]
+      )
+      if (current_members.length === olympiad.teams) {
+        throw new Error('Team is full')
+      }
+      await query(
         'UPDATE olympiad_participant_teams SET consent = TRUE WHERE olympiad_participant_id = $1',
         [participant_id]
       )
