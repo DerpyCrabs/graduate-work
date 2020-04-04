@@ -22,7 +22,6 @@ module.exports = {
     score_curve: ScoreCurve!
     tests: [OlympiadTest!]!
     participants: [Participant!]
-
     leaderboard: [LeaderboardEntry!]
   }
   enum RecruitmentType {
@@ -137,6 +136,40 @@ module.exports = {
       (await query('SELECT * FROM tests WHERE id = $1', [test_id]))[0]
   },
   Olympiad: {
+    leaderboard: async ({ id }) => {
+      const olympiad = (
+        await query('SELECT * FROM olympiads WHERE id = $1', [olympiad_id])
+      )[0]
+      if (!olympiad.ended) {
+        return null
+      }
+      const participant_ids = (
+        await query(
+          'SELECT id FROM olympiad_participants WHERE olympiad_id = $1',
+          [id]
+        )
+      ).map(row => row.id)
+
+      let leaderboard = []
+      for (const participant_id of participant_ids) {
+        const submitted_solution = await query(
+          'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1 ORDER BY submitted_at DESC LIMIT 1',
+          [participant_id]
+        )
+        if (submitted_solution.length === 0) {
+          continue
+        }
+        const answers = await query(
+          'SELECT * FROM olympiad_submitted_solution_answers WHERE solution_id = $1',
+          [submitted_solution[0].id]
+        )
+        const score = answers.reduce((acc, answer) => acc + answer.score, 0)
+        leaderboard.push({ participant: { id }, score })
+      }
+
+      leaderboard.sortBy((a, b) => b.score - a.score)
+      return leaderboard.map((entry, i) => ({ ...entry, place: i + 1 }))
+    },
     creator: async ({ creator_id }) =>
       query('SELECT * FROM users WHERE id = $1 LIMIT 1', [creator_id]).then(
         rows => rows[0]
