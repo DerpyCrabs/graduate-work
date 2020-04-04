@@ -43,8 +43,7 @@ module.exports = {
     name: String!
     users: [ParticipantUser!]
     test_answers: [TestAnswer!]
-
-    submitted_solutions: SubmittedSolution!
+    submitted_solutions: [SubmittedSolution!]
   }
   type ParticipantUser {
     user: User!
@@ -58,7 +57,6 @@ module.exports = {
   type TestAnswer {
     id: String!
     code: String!
-    submitted_at: String!
     test: Test!
     score: Int
   }
@@ -80,7 +78,6 @@ module.exports = {
     create_team(olympiad_id: String!, name: String!): String
     submit_test_answer(olympiad_id: String!, code: String!, test_id: String!): String
     set_test_answer_score(test_answer_id: String!, score: Int!): String
-
     submit_solution(olympiad_id: String!, test_answers_ids: [String!]!): String
   }
   type ScoreCurve {
@@ -120,6 +117,18 @@ module.exports = {
     test_answers: async ({ id }) =>
       await query(
         'SELECT * FROM olympiad_test_answers WHERE participant_id = $1',
+        [id]
+      ),
+    submitted_solutions: async ({ id }) =>
+      await query(
+        'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1',
+        [id]
+      )
+  },
+  SubmittedSolution: {
+    answers: async ({ id }) =>
+      await query(
+        'SELECT olympiad_test_answers.id AS id, test_id, code, score FROM olympiad_submitted_solution_answers JOIN olympiad_test_answers ON answer_id = olympiad_test_answers.id WHERE solution_id = $1',
         [id]
       )
   },
@@ -173,16 +182,98 @@ module.exports = {
 
   Mutation: { olympiads: empty },
   OlympiadsMutation: {
+    submit_solution: async (
+      _,
+      { olympiad_id, test_answers_ids },
+      { email }
+    ) => {
+      const olympiad = (
+        await query('SELECT * FROM olympiads WHERE id = $1', [olympiad_id])
+      )[0]
+
+      if (olympiad.start_at > new Date() || olympiad.done_at < new Date()) {
+        throw new Error("Olympiad hasn't begun or already ended")
+      }
+
+      const score_curve = await query(
+        'SELECT * FROM olympiad_score_curves WHERE olympiad_id = $1',
+        [olympiad_id]
+      )
+      const score_curve_coefficient = (() => {
+        const now = new Date().getTime() / 1000
+        const start = olympiad.start_at.getTime() / 1000
+        const done = olympiad.done_at.getTime() / 1000
+        const place = (now - start) / (done - start)
+        let closest_place = { prev: 0, next: 0, prev_coef: 0, next_coef: 0 }
+        score_curve.forEach((point, i) => {
+          if (point.place < place) {
+            closest_place = {
+              prev: point.place,
+              prev_coef: point.coefficient,
+              next: score_curve[i + 1].place,
+              next_coef: score_curve[i + 1].coefficient
+            }
+          }
+        })
+        return (
+          closest_place.prev_coef +
+          ((place - closest_place.prev) /
+            (closest_place.next - closest_place.prev)) *
+            (closest_place.next_coef - closest_place.prev_coef)
+        )
+      })()
+      const calculate_score = async test_id => {
+        const test_coefficient = (
+          await query(
+            'SELECT coefficient FROM olympiad_tests WHERE test_id = $1 AND olympiad_id = $2',
+            [test_id, olympiad_id]
+          )
+        )[0].coefficient
+      }
+      const participant_id = (
+        await query(
+          'SELECT olympiad_participant_id FROM olympiad_participant_teams WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1)',
+          [email]
+        )
+      )[0].olympiad_participant_id
+      const solution_id = (
+        await query(
+          'INSERT INTO olympiad_submitted_solutions (olympiad_id, participant_id, submitted_at) VALUES ($1, $2, now()) RETURNING id',
+          [olympiad_id, participant_id]
+        )
+      )[0].id
+      for (const answer_id of test_answers_ids) {
+        const test_id = (
+          await query(
+            'SELECT test_id FROM olympiad_test_answers WHERE id = $1',
+            [answer_id]
+          )
+        )[0].test_id
+        const score = await calculate_score(test_id)
+        await query(
+          'INSERT INTO olympiad_submitted_solution_answers (solution_id, answer_id, score) VALUES ($1, $2, $3)',
+          [solution_id, answer_id, score]
+        )
+      }
+      return 'done'
+    },
     set_test_answer_score: async (_, { test_answer_id, score }) =>
-      query('UPDATE olympiad_test_answers SET score = $1 WHERE id = $2', [
-        score,
-        test_answer_id
-      ]).then(_ => 'done'),
+      query(
+        'UPDATE olympiad_submitted_solution_answers SET score = $1 WHERE id = $2',
+        [score, test_answer_id]
+      ).then(_ => 'done'),
     submit_test_answer: async (
       _,
       { olympiad_id, code, test_id },
       { email }
     ) => {
+      const olympiad = (
+        await query('SELECT * FROM olympiads WHERE id = $1', [olympiad_id])
+      )[0]
+
+      if (olympiad.start_at > new Date() || olympiad.done_at < new Date()) {
+        throw new Error("Olympiad hasn't begun or already ended")
+      }
       const participant_id = (
         await query(
           'SELECT olympiad_participant_id FROM olympiad_participant_teams WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1)',
