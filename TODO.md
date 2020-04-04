@@ -7,7 +7,7 @@
 - olympiad results (p)
 - team making
 - team invites
-- support submitting full solution and reverting submitted solution
+- support submitting full solution and choose what task answer to use
 
 # teacher
 
@@ -24,19 +24,11 @@
 - add test cost (p)
 - score curve
 - support teams
-- see versions of submitted solutions
+- see versions of test answers
 - test score coefficient (remove test score)
-- chart of scores of different submitted solutions
 
 # backend
 
-- olympiads CRUD
-- olympiad collaborators (list, add, remove)
-- olympiad tests CRUD
-- olympiad students CRUD
-- olympiad scores CRUD
-- tests CRUD
-- score curve
-- teams CRUD
-- solutions submitting and reverting
+- solution submitting
+- scoreboard
 - run tests in docker
