@@ -33,19 +33,19 @@ const UserProfile = () => {
   return <>{loading ? <div>Loading</div> : <>{data.me.email}</>}</>
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   menuButton: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   title: {
     flexGrow: 1,
     display: 'none',
     [theme.breakpoints.up('sm')]: {
-      display: 'block'
-    }
+      display: 'block',
+    },
   },
   search: {
     position: 'relative',
@@ -53,9 +53,9 @@ const useStyles = makeStyles(theme => ({
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25)
+      backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   searchIcon: {
     width: theme.spacing(7),
@@ -64,13 +64,13 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   inputRoot: {
-    color: 'inherit'
+    color: 'inherit',
   },
   toolbarTitle: {
-    flex: 1
+    flex: 1,
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 7),
@@ -79,23 +79,23 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       width: 120,
       '&:focus': {
-        width: 200
-      }
-    }
+        width: 200,
+      },
+    },
   },
   button: {
-    color: 'white'
+    color: 'white',
   },
   homeIcon: {
     color: 'white',
-    paddingLeft: '0px'
-  }
+    paddingLeft: '0px',
+  },
 }))
 
 const IndexPage = () => {
   const [tab, setTab] = React.useState(null)
   return (
-    <Tabs value={tab} onChange={e => setTab(e.target.value)}>
+    <Tabs value={tab} onChange={(e) => setTab(e.target.value)}>
       <Tab label='Олимпиады' component={ReachLink} to='/olympiads' />
       <Tab label='Задания' component={ReachLink} to='/tests' />
     </Tabs>
@@ -142,7 +142,7 @@ const Index = () => {
             open={Boolean(anchorEl)}
             onClose={handleCloseMenu}
           >
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            <MenuItem onClick={handleLogout}>Выйти</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

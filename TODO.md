@@ -25,10 +25,8 @@
 - score curve
 - support teams
 - see versions of test answers
-- test score coefficient (remove test score)
+- test score coefficient
 
 # backend
 
-- solution submitting
-- scoreboard
 - run tests in docker

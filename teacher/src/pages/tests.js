@@ -18,7 +18,7 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  ExpansionPanelActions
+  ExpansionPanelActions,
 } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
@@ -74,7 +74,7 @@ function AddCheckDialogButton({ test_id }) {
   const addCheckHandler = () => {
     addCheck({
       refetchQueries: [{ query: TESTS_QUERY }],
-      variables: { test_id, input, expected }
+      variables: { test_id, input, expected },
     })
     setInput('')
     setExpected('')
@@ -84,23 +84,23 @@ function AddCheckDialogButton({ test_id }) {
   return (
     <>
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-        <DialogTitle>Add check</DialogTitle>
+        <DialogTitle>Добавление проверки</DialogTitle>
         <TextField
-          label='Input'
+          label='Ввод'
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
         />
         <TextField
-          label='Expected'
+          label='Ожидаемый вывод'
           value={expected}
-          onChange={e => setExpected(e.target.value)}
+          onChange={(e) => setExpected(e.target.value)}
         />
         <Button variant='contained' color='primary' onClick={addCheckHandler}>
-          Add
+          Добавить
         </Button>
       </Dialog>
       <Button size='small' onClick={() => setShowDialog(true)}>
-        Add check
+        Добавить проверку
       </Button>
     </>
   )
@@ -113,7 +113,7 @@ function AddTestDialogButton() {
   const addTestHandler = () => {
     addTest({
       refetchQueries: [{ query: TESTS_QUERY }],
-      variables: { name, description }
+      variables: { name, description },
     })
     setName('')
     setDescription('')
@@ -123,29 +123,23 @@ function AddTestDialogButton() {
   return (
     <>
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-        <DialogTitle>Add test</DialogTitle>
+        <DialogTitle>Добавление задания</DialogTitle>
         <TextField
-          label='Name'
+          label='Название'
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
         <TextField
-          label='Description'
+          label='Описание'
           value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
-        <TextField // TODO make it work
-          label='Оценка в баллах'
-          type='number'
-          value={500}
-          onChange={e => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value)}
         />
         <Button variant='contained' color='primary' onClick={addTestHandler}>
-          Add
+          Добавить
         </Button>
       </Dialog>
       <Button style={{ width: '100%' }} onClick={() => setShowDialog(true)}>
-        Add test
+        Добавить задание
       </Button>
     </>
   )
@@ -157,17 +151,17 @@ export default function Tests() {
   const removeCheckHandler = (test_id, input, expected) => {
     removeCheck({
       variables: { test_id, input, expected },
-      refetchQueries: [{ query: TESTS_QUERY }]
+      refetchQueries: [{ query: TESTS_QUERY }],
     })
   }
   return (
     <div>
-      <h3>Tests</h3>
+      <h3>Задания</h3>
       {loading ? (
-        <div>loading</div>
+        <div>Загрузка...</div>
       ) : (
         <Paper>
-          {data.tests.map(test => (
+          {data.tests.map((test) => (
             <ExpansionPanel>
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant='h6'>
@@ -176,28 +170,23 @@ export default function Tests() {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
                 <Typography>{test.description}</Typography>
-                <TextField // TODO make it work
-                  label='Оценка в баллах'
-                  type='number'
-                  value={500}
-                />
                 <br />
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Input</TableCell>
-                      <TableCell>Expected output</TableCell>
+                      <TableCell>Ввод</TableCell>
+                      <TableCell>Ожидаемый вывод</TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {test.checks.map(check => (
+                    {test.checks.map((check) => (
                       <TableRow>
                         <TableCell>{check.input}</TableCell>
                         <TableCell>{check.expected}</TableCell>
                         <TableCell>
                           <Button
-                            onClick={e =>
+                            onClick={(e) =>
                               removeCheckHandler(
                                 test.id,
                                 check.input,

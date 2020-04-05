@@ -20,40 +20,40 @@ const LOGIN = gql`
     login(email: $email, password: $password) @client
   }
 `
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   '@global': {
     body: {
-      backgroundColor: theme.palette.common.white
-    }
+      backgroundColor: theme.palette.common.white,
+    },
   },
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
+    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1)
+    marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2)
-  }
+    margin: theme.spacing(3, 0, 2),
+  },
 }))
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [login, { error }] = useMutation(LOGIN)
-  const handleLogin = e => {
+  const handleLogin = (e) => {
     e.preventDefault()
     e.stopPropagation()
     login({
-      variables: { email, password: pass }
+      variables: { email, password: pass },
     })
   }
   const classes = useStyles()
@@ -66,7 +66,7 @@ const LoginForm = () => {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component='h1' variant='h5'>
-          Sign in
+          Войти в систему
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
@@ -75,11 +75,11 @@ const LoginForm = () => {
             required
             fullWidth
             id='email'
-            label='Email'
+            label='Электронный адрес'
             name='email'
             autoComplete='email'
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             autoFocus
           />
           <TextField
@@ -88,16 +88,16 @@ const LoginForm = () => {
             required
             fullWidth
             name='password'
-            label='Password'
+            label='Пароль'
             type='password'
             value={pass}
-            onChange={e => setPass(e.target.value)}
+            onChange={(e) => setPass(e.target.value)}
             id='password'
             autoComplete='current-password'
           />
           <FormControlLabel
             control={<Checkbox value='remember' color='primary' />}
-            label='Remember me'
+            label='Запомнить'
           />
           <Button
             type='submit'
@@ -107,7 +107,7 @@ const LoginForm = () => {
             className={classes.submit}
             onClick={handleLogin}
           >
-            Log in
+            Войти
           </Button>
         </form>
       </div>
