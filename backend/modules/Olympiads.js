@@ -16,7 +16,7 @@ module.exports = {
     start_at: String!
     done_at: String!
     recruitment_type: RecruitmentType!
-    teams: Int
+    teams: Int!
     collaborators: [User!]
     score_curve: ScoreCurve!
     tests: [OlympiadTest!]!
@@ -159,7 +159,7 @@ module.exports = {
     },
     leaderboard: async ({ id }) => {
       const olympiad = (
-        await query('SELECT * FROM olympiads WHERE id = $1', [olympiad_id])
+        await query('SELECT * FROM olympiads WHERE id = $1', [id])
       )[0]
       if (!olympiad.ended) {
         return null
@@ -188,7 +188,7 @@ module.exports = {
         leaderboard.push({ participant: { id }, score })
       }
 
-      leaderboard.sortBy((a, b) => b.score - a.score)
+      leaderboard.sort((a, b) => b.score - a.score)
       return leaderboard.map((entry, i) => ({ ...entry, place: i + 1 }))
     },
     creator: async ({ creator_id }) =>

@@ -27,6 +27,10 @@
 - see versions of test answers
 - test score coefficient
 
+# admin
+
+- translate into russian
+
 # backend
 
 - run tests in docker

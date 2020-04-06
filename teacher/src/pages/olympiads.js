@@ -23,98 +23,177 @@ import {
   RadioGroup,
   FormControlLabel,
   DialogContent,
-  DialogActions
+  DialogActions,
 } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import AddCircle from '@material-ui/icons/AddCircle'
 import RemoveCircle from '@material-ui/icons/RemoveCircle'
 import DateFnsUtils from '@date-io/date-fns'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import { useQuery, useMutation } from '@apollo/react-hooks'
+import gql from 'graphql-tag'
+
+const OLYMPIADS_QUERY = gql`
+  {
+    me {
+      email
+    }
+    olympiads {
+      id
+      name
+      creator {
+        email
+      }
+      start_at
+      done_at
+      recruitment_type
+      teams
+      collaborators {
+        email
+      }
+      stage
+      score_curve {
+        min
+        max
+        points {
+          place
+          coefficient
+        }
+      }
+      tests {
+        score_coefficient
+        test {
+          id
+          name
+          description
+          checks {
+            input
+            expected
+          }
+        }
+      }
+      participants {
+        id
+        name
+        users {
+          user {
+            email
+          }
+          consent
+        }
+        test_answers {
+          id
+          code
+          test {
+            id
+            name
+          }
+        }
+        submitted_solutions {
+          id
+          submitted_at
+          answers {
+            id
+            code
+            test {
+              id
+              name
+            }
+            score
+          }
+        }
+      }
+      leaderboard {
+        place
+        score
+        participant {
+          id
+          name
+          users {
+            user {
+              email
+            }
+          }
+        }
+      }
+    }
+  }
+`
 
 export default function Olympiads() {
-  const olympiads = [
-    {
-      name: 'Олимпиада',
-      participants: [
-        { name: 'Участник 1', place: 1 },
-        { name: 'Участник 2', place: 2 }
-      ],
-      starts: '18:00 20 сентября 2020',
-      ends: '19:00 20 сентября 2020',
-      creator: 'Проверяющий 2',
-      stage: 'ожидает проверки',
-      type: 'open',
-      ended: true
-    },
-    {
-      name: 'Олимпиада 2',
-      participants: [{ name: 'Участник 1' }, { name: 'Участник 2' }],
-      starts: '18:00 21 сентября 2020',
-      ends: '19:00 21 сентября 2020',
-      creator: 'derpycrabs@gmail.com',
-      stage: 'еще не началась',
-      type: 'closed',
-      ended: false
-    }
-  ]
+  const { loading, data } = useQuery(OLYMPIADS_QUERY)
+  const olympiads = loading ? [] : data.olympiads
+
   return (
     <div style={{ padding: 10 }}>
-      <CreateOlympiadDialog />
-      <Paper>
-        {olympiads.map(olympiad => (
-          <ExpansionPanel>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant='h6'>
-                {olympiad.name} - {olympiad.stage}
-              </Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
-              <Typography>
-                Время начала: {olympiad.starts} <br />
-                Время окончания: {olympiad.ends} <br />
-                Создатель: {olympiad.creator} <br />
-                Количество участников: {olympiad.participants.length}
-                <br />
-                Количество проверяющих: 2 <br />
-                Количество заданий: 5<br />
-                {!olympiad.ended && (
-                  <div>
-                    Набор участников:{' '}
-                    <FormControl component='fieldset'>
-                      <RadioGroup row value={olympiad.type}>
-                        <FormControlLabel
-                          value='open'
-                          control={<Radio />}
-                          labelPlacement='start'
-                          label='открытый'
-                        />
-                        <FormControlLabel
-                          value='closed'
-                          control={<Radio />}
-                          labelPlacement='start'
-                          label='по приглашениям'
-                        />
-                      </RadioGroup>
-                    </FormControl>
-                  </div>
-                )}
-              </Typography>
-            </ExpansionPanelDetails>
-            <ExpansionPanelActions>
-              {olympiad.ended || <Tests />}
-              {olympiad.ended ? <Scores /> : <Students />}
-              {olympiad.creator === 'derpycrabs@gmail.com' ? (
-                <Collaborators />
-              ) : null}
-              {olympiad.ended && (
-                <Button size='small' color='secondary'>
-                  Закончить проверку
-                </Button>
-              )}
-            </ExpansionPanelActions>
-          </ExpansionPanel>
-        ))}
-      </Paper>
+      {loading ? (
+        <div>Загрузка...</div>
+      ) : (
+        <div>
+          <Paper>
+            {olympiads.map((olympiad) => (
+              <ExpansionPanel>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant='h6'>
+                    {olympiad.name} - {olympiad.stage}
+                  </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+                  <Typography>
+                    Время начала: {olympiad.start_at} <br />
+                    Время окончания: {olympiad.done_at} <br />
+                    Создатель: {olympiad.creator.email} <br />
+                    Количество участников:{' '}
+                    {
+                      olympiad.participants.filter((p) =>
+                        p.users.every((u) => u.consent)
+                      ).length
+                    }
+                    <br />
+                    Количество проверяющих: {olympiad.collaborators.length}{' '}
+                    <br />
+                    Количество заданий: {olympiad.tests.length}
+                    <br />
+                    {!olympiad.stage === 'Ended' && olympiad.teams === 1 && (
+                      <div>
+                        Набор участников:{' '}
+                        <FormControl component='fieldset'>
+                          <RadioGroup row value={olympiad.recruitment_type}>
+                            <FormControlLabel
+                              value='Open'
+                              control={<Radio />}
+                              labelPlacement='start'
+                              label='открытый'
+                            />
+                            <FormControlLabel
+                              value='Closed'
+                              control={<Radio />}
+                              labelPlacement='start'
+                              label='по приглашениям'
+                            />
+                          </RadioGroup>
+                        </FormControl>
+                      </div>
+                    )}
+                  </Typography>
+                </ExpansionPanelDetails>
+                <ExpansionPanelActions>
+                  {olympiad.stage === 'Ended' || <Tests />}
+                  {olympiad.stage === 'Review' ? <Leaderboard /> : <Students />}
+                  {olympiad.creator.email === data.me.email ? (
+                    <Collaborators />
+                  ) : null}
+                  {olympiad.stage === 'Review' && (
+                    <Button size='small' color='secondary'>
+                      Закончить проверку
+                    </Button>
+                  )}
+                </ExpansionPanelActions>
+              </ExpansionPanel>
+            ))}
+          </Paper>
+        </div>
+      )}
     </div>
   )
 }
@@ -125,13 +204,13 @@ function CreateOlympiadDialog() {
     <>
       <Button
         variant='contained'
-        onClick={_ => setOpen(true)}
+        onClick={(_) => setOpen(true)}
         style={{ width: '100%', marginBottom: 10 }}
       >
         Начать новую олимпиаду
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Новая олимпиада</DialogTitle>
         <DialogContent>
           Название: <TextField />
@@ -165,7 +244,7 @@ function CreateOlympiadDialog() {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={_ => setOpen(false)}>Отменить</Button>
+          <Button onClick={(_) => setOpen(false)}>Отменить</Button>
           <Button>Начать</Button>
         </DialogActions>
       </Dialog>
@@ -175,16 +254,16 @@ function CreateOlympiadDialog() {
 function Students({ id }) {
   const participants = [
     { name: 'Участник 1', invited: null },
-    { name: 'Участник 2', invited: 'Учитель 1' }
+    { name: 'Участник 2', invited: 'Учитель 1' },
   ]
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Участники
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Участники олимпиады</DialogTitle>
         <DialogContent>
           <Table>
@@ -220,16 +299,16 @@ function Students({ id }) {
 function InviteStudent({ id }) {
   const participants = [
     { name: 'Участник 1', invited: false },
-    { name: 'Участник 2', invited: true }
+    { name: 'Участник 2', invited: true },
   ]
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Пригласить участника
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Приглашение участника</DialogTitle>
         <DialogContent>
           <Table>
@@ -258,11 +337,11 @@ function Collaborators({ id }) {
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Проверяющие
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Проверяющие олимпиады</DialogTitle>
         <DialogContent>
           <Table>
@@ -288,16 +367,16 @@ function Collaborators({ id }) {
 function InviteCollaborator({ id }) {
   const colloborators = [
     { name: 'Проверяющий 1', invited: false },
-    { name: 'Проверяющий 2', invited: true }
+    { name: 'Проверяющий 2', invited: true },
   ]
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Пригласить проверяющих
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Приглашение проверяющих</DialogTitle>
         <DialogContent>
           <Table>
@@ -322,21 +401,21 @@ function InviteCollaborator({ id }) {
   )
 }
 
-function Scores({ id }) {
+function Leaderboard({ id }) {
   const scores = [
     { name: 'Студент 1', score: 500, place: 1 },
     { name: 'Студент 2', score: 550, place: 2 },
-    { name: 'Студент 3', score: 600, place: 3 }
+    { name: 'Студент 3', score: 600, place: 3 },
   ]
 
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Решения участников
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Решения участников</DialogTitle>
         <DialogContent>
           <Table>
@@ -375,8 +454,8 @@ function Tests({ id }) {
       added: false,
       checks: [
         { input: 5, expected: 5 },
-        { input: 10, expected: 10 }
-      ]
+        { input: 10, expected: 10 },
+      ],
     },
     {
       name: 'Числа Фиббоначи',
@@ -384,21 +463,21 @@ function Tests({ id }) {
       added: true,
       checks: [
         { input: 5, expected: 5 },
-        { input: 10, expected: 10 }
-      ]
-    }
+        { input: 10, expected: 10 },
+      ],
+    },
   ]
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button size='small' onClick={_ => setOpen(true)}>
+      <Button size='small' onClick={(_) => setOpen(true)}>
         Задания
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Задания олимпиады</DialogTitle>
         <DialogContent>
-          {tests.map(test => (
+          {tests.map((test) => (
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <ExpansionPanel style={{ flexGrow: 1 }}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -417,7 +496,7 @@ function Tests({ id }) {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {test.checks.map(check => (
+                      {test.checks.map((check) => (
                         <TableRow>
                           <TableCell>{check.input}</TableCell>
                           <TableCell>{check.expected}</TableCell>
@@ -446,8 +525,8 @@ function Review({ id }) {
       score: 0,
       checks: [
         { input: 5, expected: 5, actual: 7 },
-        { input: 10, expected: 10, actual: 10 }
-      ]
+        { input: 10, expected: 10, actual: 10 },
+      ],
     },
     {
       name: 'Числа Фиббоначи',
@@ -455,21 +534,21 @@ function Review({ id }) {
       score: 500,
       checks: [
         { input: 5, expected: 10, actual: 5 },
-        { input: 10, expected: 10, actual: 10 }
-      ]
-    }
+        { input: 10, expected: 10, actual: 10 },
+      ],
+    },
   ]
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button color='primary' onClick={_ => setOpen(true)}>
+      <Button color='primary' onClick={(_) => setOpen(true)}>
         Решение
       </Button>
 
-      <Dialog onClose={_ => setOpen(false)} open={open}>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Решение студента "Студент 1"</DialogTitle>
         <DialogContent>
-          {tests.map(test => (
+          {tests.map((test) => (
             <ExpansionPanel style={{ flexGrow: 1 }}>
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant='h6' style={{ fontSize: '1rem' }}>
@@ -489,7 +568,7 @@ function Review({ id }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {test.checks.map(check => (
+                    {test.checks.map((check) => (
                       <TableRow>
                         <TableCell>{check.input}</TableCell>
                         <TableCell>{check.expected}</TableCell>
