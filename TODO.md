@@ -1,7 +1,6 @@
 # student
 
 - main page (p)
-- olympiad apply to open (p)
 - team making
 - team invites
 - olympiad taking (p)

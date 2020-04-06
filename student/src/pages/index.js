@@ -168,8 +168,10 @@ const IndexPage = () => {
   const openOlympiads = data.olympiads.filter(
     (o) =>
       o.stage === 'Created' &&
-      (o.recruitment_type === 'Open' ||
-        o.participants.map((p) => p.name).includes(data.me.email))
+      ((o.teams === 1 &&
+        (o.recruitment_type === 'Open' ||
+          o.participants.map((p) => p.name).includes(data.me.email))) ||
+        o.teams > 1)
   )
   const ongoingOlympiads = data.olympiads.filter(
     (o) =>
@@ -232,9 +234,7 @@ const IndexPage = () => {
                     .includes(data.me.email) ? (
                     <Button disabled>Заявка на участие подана</Button>
                   ) : (
-                    <Button variant='contained'>
-                      Подать заявку на участие
-                    </Button>
+                    <Apply olympiad={olympiad} />
                   )}
                 </TableCell>
               </TableRow>
@@ -295,6 +295,28 @@ const IndexPage = () => {
         </Table>
       )}
     </Grid>
+  )
+}
+const Apply = ({ olympiad }) => {
+  const [apply] = useMutation(gql`
+    mutation apply($olympiad_id: String!) {
+      olympiads {
+        apply(olympiad_id: $olympiad_id)
+      }
+    }
+  `)
+  const applyHandler = () => {
+    apply({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+      },
+    })
+  }
+  return (
+    <Button variant='contained' onClick={applyHandler}>
+      Подать заявку на участие
+    </Button>
   )
 }
 const Index = () => {
