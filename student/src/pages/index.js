@@ -18,7 +18,7 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
 } from '@material-ui/core'
 import { fade, makeStyles } from '@material-ui/core/styles'
 import Results from './results'
@@ -26,6 +26,64 @@ import Results from './results'
 const LOGOUT = gql`
   mutation logout {
     logout @client
+  }
+`
+
+const OLYMPIADS_QUERY = gql`
+  {
+    me {
+      email
+    }
+    olympiads {
+      id
+      name
+      creator {
+        email
+      }
+      start_at
+      done_at
+      recruitment_type
+      teams
+      stage
+      tests {
+        score_coefficient
+        test {
+          id
+          name
+          description
+          checks {
+            input
+            expected
+          }
+        }
+      }
+      participants {
+        id
+        name
+        users {
+          user {
+            email
+          }
+          consent
+        }
+        submitted_solutions {
+          id
+        }
+      }
+      leaderboard {
+        place
+        score
+        participant {
+          id
+          name
+          users {
+            user {
+              email
+            }
+          }
+        }
+      }
+    }
   }
 `
 
@@ -42,19 +100,19 @@ const UserProfile = () => {
   return <>{loading ? <div>Loading</div> : <>{data.me.email}</>}</>
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   menuButton: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   title: {
     flexGrow: 1,
     display: 'none',
     [theme.breakpoints.up('sm')]: {
-      display: 'block'
-    }
+      display: 'block',
+    },
   },
   search: {
     position: 'relative',
@@ -62,9 +120,9 @@ const useStyles = makeStyles(theme => ({
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25)
+      backgroundColor: fade(theme.palette.common.white, 0.25),
     },
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
   },
   searchIcon: {
     width: theme.spacing(7),
@@ -73,13 +131,13 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: 'none',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   inputRoot: {
-    color: 'inherit'
+    color: 'inherit',
   },
   toolbarTitle: {
-    flex: 1
+    flex: 1,
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 7),
@@ -88,42 +146,54 @@ const useStyles = makeStyles(theme => ({
     [theme.breakpoints.up('sm')]: {
       width: 120,
       '&:focus': {
-        width: 200
-      }
-    }
+        width: 200,
+      },
+    },
   },
   button: {
-    color: 'white'
+    color: 'white',
   },
   homeIcon: {
     color: 'white',
-    paddingLeft: '0px'
-  }
+    paddingLeft: '0px',
+  },
 }))
 
 const IndexPage = () => {
   const [tab, setTab] = React.useState('open')
-  const olympiads = [
-    {
-      stage: 'applying',
-      name: 'Олимпиада по программированию 1',
-      starts: '19:00 20 сентября 2020',
-      applied: true
-    },
-    {
-      stage: 'applying',
-      name: 'Олимпиада по программированию 2',
-      starts: '19:00 20 сентября 2020',
-      applied: false
-    },
-    {
-      stage: 'ongoing',
-      name: 'Олимпиада по программированию 3',
-      ends: '19:00 20 сентября 2020'
-    },
-    { stage: 'scoring', name: 'Олимпиада по программированию 4' },
-    { stage: 'done', name: 'Олимпиада 5' }
-  ]
+  const { loading, data } = useQuery(OLYMPIADS_QUERY)
+  if (loading) {
+    return null
+  }
+  const openOlympiads = data.olympiads.filter(
+    (o) =>
+      o.stage === 'Created' &&
+      (o.recruitment_type === 'Open' ||
+        o.participants.map((p) => p.name).includes(data.me.email))
+  )
+  const ongoingOlympiads = data.olympiads.filter(
+    (o) =>
+      o.stage === 'Ongoing' &&
+      o.participants
+        .map((p) => p.users.filter((u) => u.consent).map((u) => u.user.email))
+        .flat()
+        .includes(data.me.email)
+  )
+  const completeOlympiads = data.olympiads.filter(
+    (o) =>
+      (o.stage === 'Review' &&
+        o.participants
+          .filter((p) => p.submitted_solutions.length !== 0)
+          .map((p) => p.users.filter((u) => u.consent).map((u) => u.user.email))
+          .flat()
+          .includes(data.me.email)) ||
+      (o.stage === 'Ended' &&
+        o.leaderboard
+          .map((l) => l.participant.users.map((u) => u.user.email))
+          .flat()
+          .includes(data.me.email))
+  )
+  // Add team support and team creation
   return (
     <Grid container>
       <Tabs
@@ -141,28 +211,34 @@ const IndexPage = () => {
           <TableHead>
             <TableRow>
               <TableCell>Название</TableCell>
+              <TableCell>Организатор</TableCell>
               <TableCell>Дата начала</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {olympiads
-              .filter(({ stage }) => stage === 'applying')
-              .map(({ name, applied, starts }) => (
-                <TableRow>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{starts}</TableCell>
-                  <TableCell>
-                    {applied ? (
-                      <Button disabled>Заявка на участие подана</Button>
-                    ) : (
-                      <Button variant='contained'>
-                        Подать заявку на участие
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+            {openOlympiads.map((olympiad) => (
+              <TableRow>
+                <TableCell>{olympiad.name}</TableCell>
+                <TableCell>{olympiad.creator.email}</TableCell>
+                <TableCell>
+                  {new Date(parseInt(olympiad.start_at)).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  {olympiad.recruitment_type === 'Open' &&
+                  olympiad.teams === 1 &&
+                  olympiad.participants
+                    .map((p) => p.name)
+                    .includes(data.me.email) ? (
+                    <Button disabled>Заявка на участие подана</Button>
+                  ) : (
+                    <Button variant='contained'>
+                      Подать заявку на участие
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -171,22 +247,24 @@ const IndexPage = () => {
           <TableHead>
             <TableRow>
               <TableCell>Название</TableCell>
+              <TableCell>Организатор</TableCell>
               <TableCell>Дата окончания</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {olympiads
-              .filter(({ stage }) => stage === 'ongoing')
-              .map(({ name, ends }) => (
-                <TableRow>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{ends}</TableCell>
-                  <TableCell>
-                    <Button variant='contained'>Перейти к выполнению</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {ongoingOlympiads.map((olympiad) => (
+              <TableRow>
+                <TableCell>{olympiad.name}</TableCell>
+                <TableCell>{olympiad.creator.email}</TableCell>
+                <TableCell>
+                  {new Date(parseInt(olympiad.done_at)).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Button variant='contained'>Перейти к выполнению</Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -195,24 +273,24 @@ const IndexPage = () => {
           <TableHead>
             <TableRow>
               <TableCell>Название</TableCell>
+              <TableCell>Организатор</TableCell>
               <TableCell>Результаты</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {olympiads
-              .filter(({ stage }) => stage === 'scoring' || stage === 'done')
-              .map(({ name, stage }) => (
-                <TableRow>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>
-                    {stage === 'scoring' ? (
-                      <div>Ожидание результатов</div>
-                    ) : (
-                      <Results id={5} />
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+            {completeOlympiads.map((olympiad) => (
+              <TableRow>
+                <TableCell>{olympiad.name}</TableCell>
+                <TableCell>{olympiad.creator.email}</TableCell>
+                <TableCell>
+                  {olympiad.stage === 'Review' ? (
+                    <div>Ожидание результатов</div>
+                  ) : (
+                    <Results id={5} />
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -260,7 +338,7 @@ const Index = () => {
             open={Boolean(anchorEl)}
             onClose={handleCloseMenu}
           >
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            <MenuItem onClick={handleLogout}>Выйти из аккаунта</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
