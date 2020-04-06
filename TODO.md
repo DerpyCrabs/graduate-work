@@ -11,7 +11,6 @@
 
 # teacher
 
-- olympiad page (cancel, complete, change type (open/closed), collaborators) (p)
 - olympiad students (p)
 - olympiad student invite dialog (p)
 - olympiad collaborators (p)

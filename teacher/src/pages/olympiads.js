@@ -123,7 +123,35 @@ const OLYMPIADS_QUERY = gql`
 export default function Olympiads() {
   const { loading, data } = useQuery(OLYMPIADS_QUERY)
   const olympiads = loading ? [] : data.olympiads
-
+  const [completeOlympiad] = useMutation(gql`
+    mutation complete($olympiad_id: String!) {
+      olympiads {
+        complete_olympiad(olympiad_id: $olympiad_id)
+      }
+    }
+  `)
+  const handleCompleteOlympiad = (olympiad_id) => {
+    completeOlympiad({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: { olympiad_id },
+    })
+  }
+  const stageToString = (stage) => {
+    switch (stage) {
+      case 'Created':
+        return 'Еще не началась'
+        break
+      case 'Ongoing':
+        return 'В процессе прохождения'
+        break
+      case 'Review':
+        return 'В процессе проверки'
+        break
+      case 'Ended':
+        return 'Закончена'
+        break
+    }
+  }
   return (
     <div style={{ padding: 10 }}>
       {loading ? (
@@ -136,7 +164,7 @@ export default function Olympiads() {
               <ExpansionPanel>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant='h6'>
-                    {olympiad.name} - {olympiad.stage}
+                    {olympiad.name} - {stageToString(olympiad.stage)}
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
@@ -159,37 +187,35 @@ export default function Olympiads() {
                     <br />
                     Количество заданий: {olympiad.tests.length}
                     <br />
-                    {!olympiad.stage === 'Ended' && olympiad.teams === 1 && (
+                    Число участников в командах: {olympiad.teams}
+                    <br />
+                    {!(olympiad.stage === 'Ended') && olympiad.teams === 1 && (
                       <div>
                         Набор участников:{' '}
-                        <FormControl component='fieldset'>
-                          <RadioGroup row value={olympiad.recruitment_type}>
-                            <FormControlLabel
-                              value='Open'
-                              control={<Radio />}
-                              labelPlacement='start'
-                              label='открытый'
-                            />
-                            <FormControlLabel
-                              value='Closed'
-                              control={<Radio />}
-                              labelPlacement='start'
-                              label='по приглашениям'
-                            />
-                          </RadioGroup>
-                        </FormControl>
+                        {olympiad.recruitment_type === 'Open'
+                          ? 'Открытый'
+                          : 'По приглашениям'}
                       </div>
                     )}
                   </Typography>
                 </ExpansionPanelDetails>
                 <ExpansionPanelActions>
-                  {olympiad.stage === 'Ended' || <Tests />}
-                  {olympiad.stage === 'Review' ? <Leaderboard /> : <Students />}
-                  {olympiad.creator.email === data.me.email ? (
+                  {olympiad.stage === 'Created' && <Tests />}
+                  {olympiad.stage === 'Review' || olympiad.stage === 'Ended' ? (
+                    <Leaderboard />
+                  ) : (
+                    <Students />
+                  )}
+                  {olympiad.creator.email === data.me.email &&
+                  olympiad.stage !== 'Ended' ? (
                     <Collaborators />
                   ) : null}
                   {olympiad.stage === 'Review' && (
-                    <Button size='small' color='secondary'>
+                    <Button
+                      size='small'
+                      color='secondary'
+                      onClick={(_) => handleCompleteOlympiad(olympiad.id)}
+                    >
                       Закончить проверку
                     </Button>
                   )}
