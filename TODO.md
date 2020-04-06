@@ -11,13 +11,9 @@
 
 # teacher
 
-- olympiad students (p)
-- olympiad student invite dialog (p)
 - olympiad scores (p)
 - olympiad code review (p)
-- add test cost (p)
 - score curve
-- support teams
 - see versions of test answers
 
 # admin

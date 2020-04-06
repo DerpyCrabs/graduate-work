@@ -212,7 +212,7 @@ export default function Olympiads() {
                   {olympiad.stage === 'Review' || olympiad.stage === 'Ended' ? (
                     <Leaderboard />
                   ) : (
-                    <Students />
+                    <Participants olympiad={olympiad} />
                   )}
                   {olympiad.creator.email === data.me.email &&
                   olympiad.stage !== 'Ended' ? (
@@ -347,12 +347,23 @@ function CreateOlympiadDialog() {
     </>
   )
 }
-function Students({ id }) {
-  const participants = [
-    { name: 'Участник 1', invited: null },
-    { name: 'Участник 2', invited: 'Учитель 1' },
-  ]
+function Participants({ olympiad }) {
   const [open, setOpen] = React.useState(false)
+  const [remove] = useMutation(gql`
+    mutation remove_participant($participant_id: String!) {
+      olympiads {
+        remove_participant(participant_id: $participant_id)
+      }
+    }
+  `)
+  const removeHandler = (participant_id) => {
+    remove({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        participant_id,
+      },
+    })
+  }
   return (
     <>
       <Button size='small' onClick={(_) => setOpen(true)}>
@@ -365,39 +376,84 @@ function Students({ id }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Имя</TableCell>
-                <TableCell>Приглашен?</TableCell>
+                {olympiad.teams === 1 ? (
+                  <>
+                    <TableCell>Имя</TableCell>
+                    <TableCell>Принял приглашение</TableCell>
+                  </>
+                ) : (
+                  <>
+                    <TableCell>Название</TableCell>
+                    <TableCell>Состав</TableCell>
+                  </>
+                )}
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {participants.map(({ name, invited }) => (
+              {olympiad.participants.map(({ id, name, users }) => (
                 <TableRow key={name}>
                   <TableCell>{name}</TableCell>
+                  {olympiad.teams === 1 ? (
+                    <TableCell>
+                      {users[0].consent ? <span>Да</span> : <span>Нет</span>}
+                    </TableCell>
+                  ) : (
+                    <TableCell>
+                      {users.map((u) => u.user.email).join(', ')}
+                    </TableCell>
+                  )}
                   <TableCell>
-                    {invited ? <span>{invited}</span> : <span>Нет</span>}
-                  </TableCell>
-                  <TableCell>
-                    <Button color='secondary'>Исключить</Button>
+                    <Button
+                      color='secondary'
+                      onClick={(_) => removeHandler(id)}
+                    >
+                      Исключить
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </DialogContent>
-        <DialogActions>
-          <InviteStudent />
-        </DialogActions>
+        {olympiad.teams === 1 && (
+          <DialogActions>
+            <InviteParticipant olympiad={olympiad} />
+          </DialogActions>
+        )}
       </Dialog>
     </>
   )
 }
-function InviteStudent({ id }) {
-  const participants = [
-    { name: 'Участник 1', invited: false },
-    { name: 'Участник 2', invited: true },
-  ]
+function InviteParticipant({ olympiad }) {
+  const { loading, data } = useQuery(gql`
+    {
+      users {
+        email
+        role
+      }
+    }
+  `)
   const [open, setOpen] = React.useState(false)
+  const [invite] = useMutation(gql`
+    mutation invite_participant($olympiad_id: String!, $user_email: String!) {
+      olympiads {
+        invite_participant(olympiad_id: $olympiad_id, user_email: $user_email)
+      }
+    }
+  `)
+  const inviteHandler = (email) => {
+    invite({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        user_email: email,
+      },
+    })
+  }
+  if (loading) {
+    return null
+  }
   return (
     <>
       <Button size='small' onClick={(_) => setOpen(true)}>
@@ -409,18 +465,27 @@ function InviteStudent({ id }) {
         <DialogContent>
           <Table>
             <TableBody>
-              {participants.map(({ name, invited }) => (
-                <TableRow key={name}>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>
-                    {invited ? (
-                      <Button disabled>Приглашен</Button>
-                    ) : (
-                      <Button color='primary'>Пригласить</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {data.users
+                .filter((u) => u.role === 'student')
+                .map(({ email }) => (
+                  <TableRow key={email}>
+                    <TableCell>{email}</TableCell>
+                    <TableCell>
+                      {olympiad.participants
+                        .map((u) => u.users[0].user.email)
+                        .includes(email) ? (
+                        <Button disabled>Приглашен</Button>
+                      ) : (
+                        <Button
+                          color='primary'
+                          onClick={(_) => inviteHandler(email)}
+                        >
+                          Пригласить
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </DialogContent>
