@@ -208,7 +208,7 @@ export default function Olympiads() {
                   )}
                   {olympiad.creator.email === data.me.email &&
                   olympiad.stage !== 'Ended' ? (
-                    <Collaborators />
+                    <Collaborators olympiad={olympiad} />
                   ) : null}
                   {olympiad.stage === 'Review' && (
                     <Button
@@ -420,9 +420,24 @@ function InviteStudent({ id }) {
     </>
   )
 }
-function Collaborators({ id }) {
-  const collaborators = [{ name: 'Проверяющий 1' }, { name: 'Проверяющий 2' }]
+function Collaborators({ olympiad }) {
   const [open, setOpen] = React.useState(false)
+  const [remove] = useMutation(gql`
+    mutation remove_collaborator($olympiad_id: String!, $user_email: String!) {
+      olympiads {
+        remove_collaborator(olympiad_id: $olympiad_id, user_email: $user_email)
+      }
+    }
+  `)
+  const removeHandler = (email) => {
+    remove({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        user_email: email,
+      },
+    })
+  }
   return (
     <>
       <Button size='small' onClick={(_) => setOpen(true)}>
@@ -434,11 +449,16 @@ function Collaborators({ id }) {
         <DialogContent>
           <Table>
             <TableBody>
-              {collaborators.map(({ name }) => (
-                <TableRow key={name}>
-                  <TableCell>{name}</TableCell>
+              {olympiad.collaborators.map(({ email }) => (
+                <TableRow key={email}>
+                  <TableCell>{email}</TableCell>
                   <TableCell>
-                    <Button color='secondary'>Отобрать права</Button>
+                    <Button
+                      color='secondary'
+                      onClick={(_) => removeHandler(email)}
+                    >
+                      Отобрать права
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -446,18 +466,41 @@ function Collaborators({ id }) {
           </Table>
         </DialogContent>
         <DialogActions>
-          <InviteCollaborator />
+          <InviteCollaborator olympiad={olympiad} />
         </DialogActions>
       </Dialog>
     </>
   )
 }
-function InviteCollaborator({ id }) {
-  const colloborators = [
-    { name: 'Проверяющий 1', invited: false },
-    { name: 'Проверяющий 2', invited: true },
-  ]
+function InviteCollaborator({ olympiad }) {
+  const { loading, data } = useQuery(gql`
+    {
+      users {
+        email
+        role
+      }
+    }
+  `)
   const [open, setOpen] = React.useState(false)
+  const [invite] = useMutation(gql`
+    mutation invite_collaborator($olympiad_id: String!, $user_email: String!) {
+      olympiads {
+        invite_collaborator(olympiad_id: $olympiad_id, user_email: $user_email)
+      }
+    }
+  `)
+  const inviteHandler = (email) => {
+    invite({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        user_email: email,
+      },
+    })
+  }
+  if (loading) {
+    return null
+  }
   return (
     <>
       <Button size='small' onClick={(_) => setOpen(true)}>
@@ -469,18 +512,27 @@ function InviteCollaborator({ id }) {
         <DialogContent>
           <Table>
             <TableBody>
-              {colloborators.map(({ name, invited }) => (
-                <TableRow key={name}>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>
-                    {invited ? (
-                      <Button disabled>Приглашен</Button>
-                    ) : (
-                      <Button color='primary'>Пригласить</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {data.users
+                .filter((u) => u.role === 'teacher')
+                .map(({ email }) => (
+                  <TableRow key={email}>
+                    <TableCell>{email}</TableCell>
+                    <TableCell>
+                      {olympiad.collaborators
+                        .map((u) => u.email)
+                        .includes(email) ? (
+                        <Button disabled>Приглашен</Button>
+                      ) : (
+                        <Button
+                          color='primary'
+                          onClick={(_) => inviteHandler(email)}
+                        >
+                          Пригласить
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </DialogContent>
