@@ -18,15 +18,21 @@ module.exports = {
     recruitment_type: RecruitmentType!
     teams: Int
     collaborators: [User!]
-    ended: Boolean!
     score_curve: ScoreCurve!
     tests: [OlympiadTest!]!
     participants: [Participant!]
     leaderboard: [LeaderboardEntry!]
+    stage: OlympiadStage!
   }
   enum RecruitmentType {
     Open
     Closed
+  }
+  enum OlympiadStage {
+    Created
+    Ongoing
+    Review
+    Ended
   }
   type LeaderboardEntry {
     place: Int!
@@ -98,12 +104,12 @@ module.exports = {
   `,
   Query: {
     olympiads: async () =>
-      query('SELECT * FROM olympiads', []).then(rows =>
-        rows.map(olympiad => ({
+      query('SELECT * FROM olympiads', []).then((rows) =>
+        rows.map((olympiad) => ({
           ...olympiad,
-          recruitment_type: olympiad.recruitment_type === 1 ? 'Closed' : 'Open'
+          recruitment_type: olympiad.recruitment_type === 1 ? 'Closed' : 'Open',
         }))
-      )
+      ),
   },
   Participant: {
     users: async ({ id }) =>
@@ -112,7 +118,7 @@ module.exports = {
           'SELECT * FROM olympiad_participant_teams JOIN users ON participant_id = users.id WHERE olympiad_participant_id = $1',
           [id]
         )
-      ).map(user => ({ consent: user.consent, user })),
+      ).map((user) => ({ consent: user.consent, user })),
     test_answers: async ({ id }) =>
       await query(
         'SELECT * FROM olympiad_test_answers WHERE participant_id = $1',
@@ -122,20 +128,35 @@ module.exports = {
       await query(
         'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1',
         [id]
-      )
+      ),
   },
   SubmittedSolution: {
     answers: async ({ id }) =>
       await query(
         'SELECT olympiad_test_answers.id AS id, test_id, code, score FROM olympiad_submitted_solution_answers JOIN olympiad_test_answers ON answer_id = olympiad_test_answers.id WHERE solution_id = $1',
         [id]
-      )
+      ),
   },
   TestAnswer: {
     test: async ({ test_id }) =>
-      (await query('SELECT * FROM tests WHERE id = $1', [test_id]))[0]
+      (await query('SELECT * FROM tests WHERE id = $1', [test_id]))[0],
   },
   Olympiad: {
+    stage: async ({ id }) => {
+      const olympiad = (
+        await query('SELECT * FROM olympiads WHERE id = $1', [id])
+      )[0]
+
+      if (olympiad.start_at > new Date()) {
+        return 'Created'
+      } else if (olympiad.done_at > new Date()) {
+        return 'Ongoing'
+      } else if (!olympiad.ended) {
+        return 'Review'
+      } else {
+        return 'Ended'
+      }
+    },
     leaderboard: async ({ id }) => {
       const olympiad = (
         await query('SELECT * FROM olympiads WHERE id = $1', [olympiad_id])
@@ -148,7 +169,7 @@ module.exports = {
           'SELECT id FROM olympiad_participants WHERE olympiad_id = $1',
           [id]
         )
-      ).map(row => row.id)
+      ).map((row) => row.id)
 
       let leaderboard = []
       for (const participant_id of participant_ids) {
@@ -172,7 +193,7 @@ module.exports = {
     },
     creator: async ({ creator_id }) =>
       query('SELECT * FROM users WHERE id = $1 LIMIT 1', [creator_id]).then(
-        rows => rows[0]
+        (rows) => rows[0]
       ),
     collaborators: async ({ id }) =>
       query(
@@ -198,7 +219,7 @@ module.exports = {
       return {
         min: interval.min_score,
         max: interval.max_score,
-        points: curve_points
+        points: curve_points,
       }
     },
     tests: async ({ id }) => {
@@ -206,11 +227,11 @@ module.exports = {
         'SELECT * FROM olympiad_tests JOIN tests ON test_id = tests.id WHERE olympiad_id = $1',
         [id]
       )
-      return tests.map(test => ({
+      return tests.map((test) => ({
         score_coefficient: test.coefficient,
-        test: test
+        test: test,
       }))
-    }
+    },
   },
 
   Mutation: { olympiads: empty },
@@ -244,7 +265,7 @@ module.exports = {
               prev: point.place,
               prev_coef: point.coefficient,
               next: score_curve[i + 1].place,
-              next_coef: score_curve[i + 1].coefficient
+              next_coef: score_curve[i + 1].coefficient,
             }
           }
         })
@@ -255,7 +276,7 @@ module.exports = {
             (closest_place.next_coef - closest_place.prev_coef)
         )
       })()
-      const calculate_score = async test_id => {
+      const calculate_score = async (test_id) => {
         const test_coefficient = (
           await query(
             'SELECT coefficient FROM olympiad_tests WHERE test_id = $1 AND olympiad_id = $2',
@@ -294,7 +315,7 @@ module.exports = {
       query(
         'UPDATE olympiad_submitted_solution_answers SET score = $1 WHERE id = $2',
         [score, test_answer_id]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     submit_test_answer: async (
       _,
       { olympiad_id, code, test_id },
@@ -376,7 +397,7 @@ module.exports = {
         [participant_id]
       )
       await query('DELETE FROM olympiad_participants WHERE id = $1', [
-        participant_id
+        participant_id,
       ])
       return 'done'
     },
@@ -464,7 +485,7 @@ module.exports = {
             parseInt(start_at),
             parseInt(done_at),
             recruitment_type === 'Closed' ? 1 : 0,
-            teams
+            teams,
           ]
         )
       )[0].id
@@ -478,26 +499,26 @@ module.exports = {
     },
     complete_olympiad: async (_, { olympiad_id }) =>
       await query('UPDATE olympiads SET ended = true WHERE id = $1', [
-        olympiad_id
-      ]).then(_ => 'done'),
+        olympiad_id,
+      ]).then((_) => 'done'),
     invite_collaborator: async (_, { olympiad_id, user_email }) =>
       await query(
         'INSERT INTO olympiad_collaborators (olympiad_id, collaborator_id) VALUES ($1, (SELECT id FROM users WHERE email = $2 LIMIT 1))',
         [olympiad_id, user_email]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     remove_collaborator: async (_, { olympiad_id, user_email }) =>
       await query(
         'DELETE FROM olympiad_collaborators WHERE olympiad_id = $1 AND collaborator_id = (SELECT id FROM users WHERE email = $2 LIMIT 1)',
         [olympiad_id, user_email]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     set_score_interval: async (_, { olympiad_id, min, max }) =>
       await query(
         'UPDATE olympiads SET min_score = $1, max_score = $2 WHERE id = $3',
         [min, max, olympiad_id]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     set_score_curve: async (_, { olympiad_id, curve }) => {
       await query('DELETE FROM olympiad_score_curves WHERE olympiad_id = $1', [
-        olympiad_id
+        olympiad_id,
       ])
       for (const point of curve.points) {
         await query(
@@ -511,12 +532,12 @@ module.exports = {
       query(
         'INSERT INTO olympiad_tests (test_id, olympiad_id, coefficient) VALUES ($1, $2, 1.0)',
         [test_id, olympiad_id]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     remove_test: async (_, { olympiad_id, test_id }) =>
       query(
         'DELETE FROM olympiad_tests WHERE test_id = $1 AND olympiad_id = $2',
         [test_id, olympiad_id]
-      ).then(_ => 'done'),
+      ).then((_) => 'done'),
     set_test_score_coefficient: async (
       _,
       { olympiad_id, test_id, score_coefficient }
@@ -524,6 +545,6 @@ module.exports = {
       query(
         'UPDATE olympiad_tests SET coefficient = $1 WHERE test_id = $2 AND olympiad_id = $3',
         [score_coefficient, test_id, olympiad_id]
-      ).then(_ => 'done')
-  }
+      ).then((_) => 'done'),
+  },
 }
