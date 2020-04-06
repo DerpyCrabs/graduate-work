@@ -130,6 +130,7 @@ export default function Olympiads() {
         <div>Загрузка...</div>
       ) : (
         <div>
+          <CreateOlympiadDialog />
           <Paper>
             {olympiads.map((olympiad) => (
               <ExpansionPanel>
@@ -140,8 +141,12 @@ export default function Olympiads() {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
                   <Typography>
-                    Время начала: {olympiad.start_at} <br />
-                    Время окончания: {olympiad.done_at} <br />
+                    Время начала:{' '}
+                    {new Date(parseInt(olympiad.start_at)).toLocaleString()}{' '}
+                    <br />
+                    Время окончания:{' '}
+                    {new Date(parseInt(olympiad.done_at)).toLocaleString()}{' '}
+                    <br />
                     Создатель: {olympiad.creator.email} <br />
                     Количество участников:{' '}
                     {
@@ -200,6 +205,45 @@ export default function Olympiads() {
 
 function CreateOlympiadDialog() {
   const [open, setOpen] = React.useState(false)
+  const [createOlympiad] = useMutation(gql`
+    mutation create_olympiad(
+      $name: String!
+      $start_at: String!
+      $done_at: String!
+      $recruitment_type: RecruitmentType!
+      $teams: Int!
+    ) {
+      olympiads {
+        create_olympiad(
+          name: $name
+          start_at: $start_at
+          done_at: $done_at
+          recruitment_type: $recruitment_type
+          teams: $teams
+        )
+      }
+    }
+  `)
+  const [name, setName] = React.useState('')
+  const [start, setStart] = React.useState(new Date())
+  const [done, setDone] = React.useState(new Date())
+  const [teams, setTeams] = React.useState(1)
+  const [recruitment, setRecruitment] = React.useState('Open')
+  console.log(teams)
+
+  const createOlympiadHandler = () => {
+    createOlympiad({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        name,
+        start_at: (start.getTime() / 1000).toString(),
+        done_at: (done.getTime() / 1000).toString(),
+        recruitment_type: recruitment,
+        teams,
+      },
+    })
+    setOpen(false)
+  }
   return (
     <>
       <Button
@@ -213,39 +257,57 @@ function CreateOlympiadDialog() {
       <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Новая олимпиада</DialogTitle>
         <DialogContent>
-          Название: <TextField />
+          Название:{' '}
+          <TextField value={name} onChange={(e) => setName(e.target.value)} />
           <br />
           Время начала:{' '}
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <DateTimePicker value={new Date()} />
+            <DateTimePicker value={start} onChange={setStart} />
           </MuiPickersUtilsProvider>
           <br />
           Время окончания:{' '}
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <DateTimePicker value={new Date()} />
+            <DateTimePicker value={done} onChange={setDone} />
           </MuiPickersUtilsProvider>
           <br />
-          Набор участников:{' '}
-          <FormControl component='fieldset'>
-            <RadioGroup row value={'open'}>
-              <FormControlLabel
-                value='open'
-                control={<Radio />}
-                labelPlacement='start'
-                label='открытый'
-              />
-              <FormControlLabel
-                value='closed'
-                control={<Radio />}
-                labelPlacement='start'
-                label='по приглашениям'
-              />
-            </RadioGroup>
-          </FormControl>
+          Число людей в командах:
+          <Select value={teams} onChange={(e) => setTeams(e.target.value)}>
+            <MenuItem value={1}>1</MenuItem>
+            <MenuItem value={2}>2</MenuItem>
+            <MenuItem value={3}>3</MenuItem>
+            <MenuItem value={4}>4</MenuItem>
+            <MenuItem value={5}>5</MenuItem>
+          </Select>
+          <br />
+          {teams === 1 && (
+            <>
+              Набор участников:{' '}
+              <FormControl component='fieldset'>
+                <RadioGroup
+                  row
+                  value={recruitment}
+                  onChange={(e) => setRecruitment(e.target.value)}
+                >
+                  <FormControlLabel
+                    value='Open'
+                    control={<Radio />}
+                    labelPlacement='start'
+                    label='открытый'
+                  />
+                  <FormControlLabel
+                    value='Closed'
+                    control={<Radio />}
+                    labelPlacement='start'
+                    label='по приглашениям'
+                  />
+                </RadioGroup>
+              </FormControl>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={(_) => setOpen(false)}>Отменить</Button>
-          <Button>Начать</Button>
+          <Button onClick={createOlympiadHandler}>Начать</Button>
         </DialogActions>
       </Dialog>
     </>
