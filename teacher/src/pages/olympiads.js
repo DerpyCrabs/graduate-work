@@ -122,7 +122,13 @@ const OLYMPIADS_QUERY = gql`
 
 export default function Olympiads() {
   const { loading, data } = useQuery(OLYMPIADS_QUERY)
-  const olympiads = loading ? [] : data.olympiads
+  const olympiads = loading
+    ? []
+    : data.olympiads.filter(
+        (o) =>
+          data.me.email === o.creator.email ||
+          o.collaborators.map((c) => c.email).includes(data.me.email)
+      )
   const [completeOlympiad] = useMutation(gql`
     mutation complete($olympiad_id: String!) {
       olympiads {
