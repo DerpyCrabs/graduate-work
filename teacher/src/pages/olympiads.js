@@ -206,7 +206,9 @@ export default function Olympiads() {
                   </Typography>
                 </ExpansionPanelDetails>
                 <ExpansionPanelActions>
-                  {olympiad.stage === 'Created' && <Tests />}
+                  {olympiad.stage === 'Created' && (
+                    <Tests olympiad={olympiad} />
+                  )}
                   {olympiad.stage === 'Review' || olympiad.stage === 'Ended' ? (
                     <Leaderboard />
                   ) : (
@@ -592,28 +594,81 @@ function Leaderboard({ id }) {
   )
 }
 
-function Tests({ id }) {
-  const tests = [
+function Tests({ olympiad }) {
+  const { loading, data } = useQuery(gql`
     {
-      name: 'Консольный ввод',
-      description: 'Описание задания',
-      added: false,
-      checks: [
-        { input: 5, expected: 5 },
-        { input: 10, expected: 10 },
-      ],
-    },
-    {
-      name: 'Числа Фиббоначи',
-      description: 'Описание задания',
-      added: true,
-      checks: [
-        { input: 5, expected: 5 },
-        { input: 10, expected: 10 },
-      ],
-    },
-  ]
+      tests {
+        id
+        name
+        description
+        checks {
+          input
+          expected
+        }
+      }
+    }
+  `)
   const [open, setOpen] = React.useState(false)
+  const [add] = useMutation(gql`
+    mutation add_test($olympiad_id: String!, $test_id: String!) {
+      olympiads {
+        add_test(olympiad_id: $olympiad_id, test_id: $test_id)
+      }
+    }
+  `)
+  const [remove] = useMutation(gql`
+    mutation remove_test($olympiad_id: String!, $test_id: String!) {
+      olympiads {
+        remove_test(olympiad_id: $olympiad_id, test_id: $test_id)
+      }
+    }
+  `)
+  const [setScoreCoefficient] = useMutation(gql`
+    mutation set_coef(
+      $olympiad_id: String!
+      $test_id: String!
+      $score_coefficient: Float!
+    ) {
+      olympiads {
+        set_test_score_coefficient(
+          olympiad_id: $olympiad_id
+          test_id: $test_id
+          score_coefficient: $score_coefficient
+        )
+      }
+    }
+  `)
+  const addHandler = (id) => {
+    add({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        test_id: id,
+      },
+    })
+  }
+  const removeHandler = (id) => {
+    remove({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        test_id: id,
+      },
+    })
+  }
+  const setCoefficient = (id, coef) => {
+    setScoreCoefficient({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        test_id: id,
+        score_coefficient: parseFloat(coef),
+      },
+    })
+  }
+  if (loading) {
+    return null
+  }
   return (
     <>
       <Button size='small' onClick={(_) => setOpen(true)}>
@@ -623,7 +678,7 @@ function Tests({ id }) {
       <Dialog onClose={(_) => setOpen(false)} open={open}>
         <DialogTitle>Задания олимпиады</DialogTitle>
         <DialogContent>
-          {tests.map((test) => (
+          {data.tests.map((test) => (
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <ExpansionPanel style={{ flexGrow: 1 }}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -633,6 +688,23 @@ function Tests({ id }) {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
                   <Typography>{test.description}</Typography>
+                  <br />
+                  {olympiad.tests.map((t) => t.test.id).includes(test.id) && (
+                    <div>
+                      Стоимость задания:{' '}
+                      {
+                        <input
+                          value={
+                            olympiad.tests.find((t) => t.test.id === test.id)
+                              .score_coefficient
+                          }
+                          onChange={(e) =>
+                            setCoefficient(test.id, e.target.value)
+                          }
+                        />
+                      }
+                    </div>
+                  )}
                   <br />
                   <Table>
                     <TableHead>
@@ -653,7 +725,15 @@ function Tests({ id }) {
                 </ExpansionPanelDetails>
               </ExpansionPanel>
               <div>
-                <Button>{test.added ? <RemoveCircle /> : <AddCircle />}</Button>
+                {olympiad.tests.map((t) => t.test.id).includes(test.id) ? (
+                  <Button>
+                    <RemoveCircle onClick={(_) => removeHandler(test.id)} />
+                  </Button>
+                ) : (
+                  <Button>
+                    <AddCircle onClick={(_) => addHandler(test.id)} />
+                  </Button>
+                )}
               </div>
             </div>
           ))}
