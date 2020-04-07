@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import { ApolloProvider, useQuery } from '@apollo/react-hooks'
 import client from './apollo-client'
 import Login from './pages/login'
+import Signup from './pages/signup'
 import { Router } from '@reach/router'
 import gql from 'graphql-tag'
 import Index from './pages/index'
@@ -17,7 +18,10 @@ const AdminApp = () => {
   )
   return (
     <Suspense fallback={<div>loading...</div>}>
-      <Router>{data.token ? <Index path='/*' /> : <Login path='/' />}</Router>
+      <Router>
+        {data.token ? <Index path='/*' /> : <Login path='/' />}
+        <Signup path='/signup' />
+      </Router>
     </Suspense>
   )
 }

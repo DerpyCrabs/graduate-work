@@ -12,46 +12,48 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
+import { Link as ReachLink } from '@reach/router'
+import Link from '@material-ui/core/Link'
 
 const LOGIN = gql`
   mutation login($email: String!, $password: String!) {
     login(email: $email, password: $password) @client
   }
 `
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   '@global': {
     body: {
-      backgroundColor: theme.palette.common.white
-    }
+      backgroundColor: theme.palette.common.white,
+    },
   },
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
+    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1)
+    marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2)
-  }
+    margin: theme.spacing(3, 0, 2),
+  },
 }))
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [login, { error }] = useMutation(LOGIN)
-  const handleLogin = e => {
+  const handleLogin = (e) => {
     e.preventDefault()
     e.stopPropagation()
     login({
-      variables: { email, password: pass }
+      variables: { email, password: pass },
     })
   }
   const classes = useStyles()
@@ -77,7 +79,7 @@ const LoginForm = () => {
             name='email'
             autoComplete='email'
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             autoFocus
           />
           <TextField
@@ -89,7 +91,7 @@ const LoginForm = () => {
             label='Password'
             type='password'
             value={pass}
-            onChange={e => setPass(e.target.value)}
+            onChange={(e) => setPass(e.target.value)}
             id='password'
             autoComplete='current-password'
           />
@@ -108,6 +110,11 @@ const LoginForm = () => {
             Log in
           </Button>
         </form>
+        <Grid container justify='flex-end'>
+          <Link component={ReachLink} to='/signup' variant='body2'>
+            {"Don't have an account? Sign up..."}
+          </Link>
+        </Grid>
       </div>
     </Container>
   )

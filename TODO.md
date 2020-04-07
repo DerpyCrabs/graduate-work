@@ -1,10 +1,9 @@
 # student
 
-- main page (p)
 - olympiad taking (p)
 - olympiad results (p)
 - support submitting full solution and choose what task answer to use
-- add sign up
+- translate into russian
 
 # teacher
 
