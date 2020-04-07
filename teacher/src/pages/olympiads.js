@@ -216,10 +216,13 @@ export default function Olympiads() {
                       <ScoreCurve olympiad={olympiad} />
                     </>
                   )}
-                  {olympiad.stage === 'Review' || olympiad.stage === 'Ended' ? (
-                    <Leaderboard />
-                  ) : (
-                    <Participants olympiad={olympiad} />
+                  {!(olympiad.stage === 'Review') &&
+                    !(olympiad.stage === 'Ended') && (
+                      <Participants olympiad={olympiad} />
+                    )}
+                  {olympiad.stage === 'Review' && <Review />}
+                  {olympiad.stage === 'Ended' && (
+                    <Leaderboard olympiad={olympiad} />
                   )}
                   {olympiad.creator.email === data.me.email &&
                   olympiad.stage !== 'Ended' ? (
@@ -693,8 +696,7 @@ function InviteCollaborator({ olympiad }) {
     </>
   )
 }
-
-function Leaderboard({ id }) {
+function Review({ id }) {
   const scores = [
     { name: 'Студент 1', score: 500, place: 1 },
     { name: 'Студент 2', score: 550, place: 2 },
@@ -724,6 +726,51 @@ function Leaderboard({ id }) {
               {scores.map(({ name, score, place }) => (
                 <TableRow key={name}>
                   <TableCell>{name}</TableCell>
+                  <TableCell>{score}</TableCell>
+                  <TableCell>{place}</TableCell>
+                  <TableCell>
+                    <ParticipantReview />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+function Leaderboard({ olympiad }) {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={(_) => setOpen(true)}>
+        Таблица результатов
+      </Button>
+
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Таблица результатов</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Участник</TableCell>
+                <TableCell>Баллы</TableCell>
+                <TableCell>Место</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {olympiad.leaderboard.map(({ place, score, participant }) => (
+                <TableRow key={participant.name}>
+                  <TableCell>
+                    {olympiad.teams === 1
+                      ? participant.name
+                      : `${participant.name} (${participant.users
+                          .map((u) => u.user.email)
+                          .join(', ')})`}
+                  </TableCell>
                   <TableCell>{score}</TableCell>
                   <TableCell>{place}</TableCell>
                   <TableCell>
@@ -888,7 +935,7 @@ function Tests({ olympiad }) {
   )
 }
 
-function Review({ id }) {
+function ParticipantReview({ id }) {
   const tests = [
     {
       name: 'Консольный ввод',
