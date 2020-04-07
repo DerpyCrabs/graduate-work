@@ -19,12 +19,12 @@ export default function PluginExecutionTime() {
     return <div>Loading</div>
   }
   const dates = data.stats.plugin_runtime
-    .map(pr => {
+    .map((pr) => {
       let date = new Date(parseInt(pr.start_time))
       date.setHours(0, 0, 0, 0)
       return date.getTime()
     })
-    .reduce(function(acc, curr) {
+    .reduce(function (acc, curr) {
       if (typeof acc[curr] == 'undefined') {
         acc[curr] = 1
       } else {
@@ -35,7 +35,7 @@ export default function PluginExecutionTime() {
     }, {})
   const pieData = Object.entries(dates).map(([date, activity]) => ({
     date,
-    activity
+    activity,
   }))
 
   return (
@@ -50,7 +50,7 @@ export default function PluginExecutionTime() {
           dataKey='date'
           type='number'
           domain={['auto', 'auto']}
-          tickFormatter={tickStr => {
+          tickFormatter={(tickStr) => {
             const d = new Date(parseInt(tickStr))
             return `${d.getDate()}/${d.getMonth() + 1}`
           }}
@@ -58,7 +58,11 @@ export default function PluginExecutionTime() {
         />
         <YAxis />
         <Legend layout='vertical' />
-        <Area name='Tests done per day' dataKey='activity' stroke='#82ca9d' />
+        <Area
+          name='Решений заданий олимпиад в день'
+          dataKey='activity'
+          stroke='#82ca9d'
+        />
       </AreaChart>
     </div>
   )

@@ -12,8 +12,6 @@
 
 # admin
 
-- translate into russian
-
 # backend
 
 - run tests in docker

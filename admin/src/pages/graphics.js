@@ -4,7 +4,7 @@ import {
   Typography,
   Card,
   CardHeader,
-  CardContent
+  CardContent,
 } from '@material-ui/core'
 import LanguageUsage from '../components/language-usage'
 import TestCompletion from '../components/test-completion'
@@ -14,30 +14,30 @@ import PluginExecutionTime from '../components/plugin-execution-time'
 export default function Graphics() {
   const allowed = JSON.parse(localStorage.getItem('graphics'))
   if (!allowed) {
-    return <div>Graphics are not allowed by your license</div>
+    return <div>Статистика не доступна для указанного лицензионного ключа</div>
   }
   return (
     <div style={{ padding: 5, display: 'flex', flexDirection: 'column' }}>
       <Card style={{ margin: 5 }}>
-        <CardHeader title='Language usage' />
+        <CardHeader title='Использование языков программирования' />
         <CardContent>
           <LanguageUsage />
         </CardContent>
       </Card>
       <Card style={{ margin: 5 }}>
-        <CardHeader title='Test completion' />
+        <CardHeader title='Выполнение заданий' />
         <CardContent>
           <TestCompletion />
         </CardContent>
       </Card>
       <Card style={{ margin: 5 }}>
-        <CardHeader title='Students activity' />
+        <CardHeader title='Активность участников' />
         <CardContent>
           <StudentActivity />
         </CardContent>
       </Card>
       <Card style={{ margin: 5 }}>
-        <CardHeader title='Average plugin execution time' />
+        <CardHeader title='Среднее время выполнения плагинов' />
         <CardContent>
           <PluginExecutionTime />
         </CardContent>

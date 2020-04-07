@@ -18,7 +18,7 @@ export default function License() {
   const [key, setKey] = React.useState(currentKey)
   const { data, loading } = useQuery(LICENSE, {
     variables: { key },
-    pollInterval: 1000
+    pollInterval: 1000,
   })
   React.useEffect(() => {
     if (data && data.license) {
@@ -32,28 +32,28 @@ export default function License() {
   }, [data])
   return (
     <div style={{ padding: 10 }}>
-      current key:
+      Ключ:
       <input
         value={key}
         style={{ width: 500 }}
-        onChange={e => setKey(e.target.value)}
+        onChange={(e) => setKey(e.target.value)}
       />
       <br />
       {!(!data || !data.license) ? (
         <div>
-          Name: {data.license.name}
+          Имя: {data.license.name}
           <br />
-          Organization: {data.license.organization}
+          Организация: {data.license.organization}
           <br />
-          Max thread count: {data.license.threads}
+          Максимальное число одновременных задач: {data.license.threads}
           <br />
-          Graphics allowed: {JSON.stringify(data.license.graphics)}
+          Отображение статистики: {data.license.graphics ? 'Да' : 'Нет'}
           <br />
-          Expires on: {data.license.expiresOn}
+          Срок действия ключа: {data.license.expiresOn}
           <br />
         </div>
       ) : (
-        <div>This license is invalid</div>
+        <div>Ключ некорректен или его срок действия истек</div>
       )}
     </div>
   )

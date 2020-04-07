@@ -13,7 +13,7 @@ import {
   TextField,
   Button,
   Select,
-  MenuItem
+  MenuItem,
 } from '@material-ui/core'
 
 const USERS_QUERY = gql`
@@ -31,7 +31,7 @@ const CHANGE_ROLE = gql`
   }
 `
 
-const sortUsers = users => {
+const sortUsers = (users) => {
   let copyUsers = users.slice()
   copyUsers.sort((a, b) => (a.email > b.email ? 1 : -1))
   return copyUsers
@@ -51,7 +51,7 @@ function RegisterUserDialogButton() {
   const registerHandler = () => {
     registerUser({
       refetchQueries: [{ query: USERS_QUERY }],
-      variables: { email, password }
+      variables: { email, password },
     })
     setEmail('')
     setPassword('')
@@ -61,19 +61,19 @@ function RegisterUserDialogButton() {
   return (
     <>
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-        <DialogTitle>Register user</DialogTitle>
+        <DialogTitle>Регистрация пользователя</DialogTitle>
         <TextField
-          label='Email'
+          label='Электронная почта'
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <TextField
-          label='Password'
+          label='Пароль'
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <Button variant='contained' color='primary' onClick={registerHandler}>
-          Register
+          Зарегистрировать
         </Button>
       </Dialog>
       <Button
@@ -81,7 +81,7 @@ function RegisterUserDialogButton() {
         variant='contained'
         onClick={() => setShowDialog(true)}
       >
-        Register user
+        Зарегистрировать пользователя
       </Button>
     </>
   )
@@ -90,16 +90,16 @@ function RegisterUserDialogButton() {
 export default function Users() {
   const { loading, data } = useQuery(USERS_QUERY)
   const [changeRole] = useMutation(CHANGE_ROLE)
-  const changeRoleHandler = email => e => {
+  const changeRoleHandler = (email) => (e) => {
     changeRole({
       refetchQueries: [{ query: USERS_QUERY }],
-      variables: { email, role: e.target.value }
+      variables: { email, role: e.target.value },
     })
   }
 
   return (
     <div>
-      <h3>Users</h3>
+      <h3>Пользователи</h3>
       {loading ? (
         <div>loading</div>
       ) : (
@@ -108,8 +108,8 @@ export default function Users() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
+                <TableCell>Электронная почта</TableCell>
+                <TableCell>Статус</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -118,9 +118,9 @@ export default function Users() {
                   <TableCell>{email}</TableCell>
                   <TableCell>
                     <Select value={role} onChange={changeRoleHandler(email)}>
-                      <MenuItem value='student'>Student</MenuItem>
-                      <MenuItem value='teacher'>Teacher</MenuItem>
-                      <MenuItem value='admin'>Admin</MenuItem>
+                      <MenuItem value='student'>Участник</MenuItem>
+                      <MenuItem value='teacher'>Преподаватель</MenuItem>
+                      <MenuItem value='admin'>Администратор</MenuItem>
                     </Select>
                   </TableCell>
                 </TableRow>

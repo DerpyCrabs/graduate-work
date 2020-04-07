@@ -12,7 +12,7 @@ import {
   Dialog,
   DialogTitle,
   TextField,
-  Button
+  Button,
 } from '@material-ui/core'
 
 const PLUGINS_QUERY = gql`
@@ -67,7 +67,7 @@ const PluginEnabledCheckbox = ({ enabled, id }) => {
   return (
     <Checkbox
       checked={enabled}
-      onChange={e => (!e.target.checked ? disable() : enable())}
+      onChange={(e) => (!e.target.checked ? disable() : enable())}
     />
   )
 }
@@ -88,50 +88,31 @@ const PluginSettingsDialog = ({ id, settings: initialSettings }) => {
     `
   )
   const setSettingsHandler = (key, value) => {
-    setSettings([{ key, value }, ...settings.filter(set => key !== set.key)])
+    setSettings([{ key, value }, ...settings.filter((set) => key !== set.key)])
     setSetting({
-      variables: { id, key, value }
+      variables: { id, key, value },
     })
   }
   return (
     <div>
       {initialSettings.length > 0 ? (
-        <Button onClick={() => setShowDialog(true)}>Show settings</Button>
+        <Button onClick={() => setShowDialog(true)}>Настройки</Button>
       ) : (
-        <div>No settings</div>
+        <div>Нет настроек</div>
       )}
       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-        <DialogTitle>Plugin settings</DialogTitle>
+        <DialogTitle>Настройки плагина</DialogTitle>
         {settings.map(({ key, value }) => (
           <TextField
             label={key}
             value={settings.find(({ key: key2 }) => key2 === key).value}
-            onChange={e => setSettingsHandler(key, e.target.value)}
+            onChange={(e) => setSettingsHandler(key, e.target.value)}
           />
         ))}
       </Dialog>
     </div>
   )
 }
-
-// const PluginStatsDialog = ({ stats }) => {
-//   const [showDialog, setShowDialog] = React.useState(false)
-//   return (
-//     <div>
-//       {stats.length > 0 ? (
-//         <Button onClick={() => setShowDialog(true)}>Show stats</Button>
-//       ) : (
-//         <div>No stats</div>
-//       )}
-//       <Dialog onClose={() => setShowDialog(false)} open={showDialog}>
-//         <DialogTitle>Plugin statistics</DialogTitle>
-//         {stats.map(stat => (
-//           <div>{JSON.stringify(stat)}</div>
-//         ))}
-//       </Dialog>
-//     </div>
-//   )
-// }
 
 export default function Plugins() {
   const { loading, data } = useQuery(PLUGINS_QUERY)
@@ -141,7 +122,7 @@ export default function Plugins() {
   const [addWork] = useMutation(ADD_WORK)
   return (
     <div>
-      <h3>Plugins list</h3>
+      <h3>Список плагинов</h3>
       <br />
       {loading ? (
         <div>loading</div>
@@ -151,11 +132,11 @@ export default function Plugins() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>Enabled?</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Stage</TableCell>
-                <TableCell>Version</TableCell>
-                <TableCell>Settings</TableCell>
+                <TableCell>Включен?</TableCell>
+                <TableCell>Имя</TableCell>
+                <TableCell>Этап</TableCell>
+                <TableCell>Версия</TableCell>
+                <TableCell>Настройки</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
