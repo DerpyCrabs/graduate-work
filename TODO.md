@@ -7,7 +7,6 @@
 
 # teacher
 
-- score curve
 - olympiad scores (p)
 - olympiad code review (p)
 - see versions of test answers

@@ -32,6 +32,7 @@ import DateFnsUtils from '@date-io/date-fns'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import ScoreCurveChart from '../score-curve-chart'
 
 const OLYMPIADS_QUERY = gql`
   {
@@ -207,7 +208,10 @@ export default function Olympiads() {
                 </ExpansionPanelDetails>
                 <ExpansionPanelActions>
                   {olympiad.stage === 'Created' && (
-                    <Tests olympiad={olympiad} />
+                    <>
+                      <Tests olympiad={olympiad} />
+                      <ScoreCurve olympiad={olympiad} />
+                    </>
                   )}
                   {olympiad.stage === 'Review' || olympiad.stage === 'Ended' ? (
                     <Leaderboard />
@@ -234,6 +238,79 @@ export default function Olympiads() {
         </div>
       )}
     </div>
+  )
+}
+function ScoreCurve({ olympiad }) {
+  const [open, setOpen] = React.useState(false)
+  const [setScoreCurve] = useMutation(gql`
+    mutation set_curve($olympiad_id: String!, $curve: ScoreCurveInput!) {
+      olympiads {
+        set_score_curve(olympiad_id: $olympiad_id, curve: $curve)
+      }
+    }
+  `)
+  const [setScoreInterval] = useMutation(gql`
+    mutation set_interval($olympiad_id: String!, $min: Int!, $max: Int!) {
+      olympiads {
+        set_score_interval(olympiad_id: $olympiad_id, min: $min, max: $max)
+      }
+    }
+  `)
+  const [min, setMin] = React.useState(olympiad.score_curve.min)
+  const [max, setMax] = React.useState(olympiad.score_curve.max)
+  const [curve, setCurve] = React.useState(olympiad.score_curve.points)
+
+  const setCurveHandler = () => {
+    setScoreInterval({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        min: parseInt(min),
+        max: parseInt(max),
+      },
+    })
+    setScoreCurve({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        curve: {
+          points: curve.map(({ place, coefficient }) => ({
+            place,
+            coefficient,
+          })),
+        },
+      },
+    })
+    setOpen(false)
+  }
+  return (
+    <>
+      <Button size='small' onClick={(_) => setOpen(true)}>
+        Кривая оценивания
+      </Button>
+
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Кривая оценивания</DialogTitle>
+        <DialogContent>
+          Минимальная оценка:{' '}
+          <TextField value={min} onChange={(e) => setMin(e.target.value)} />
+          <br />
+          Максимальная оценка:{' '}
+          <TextField value={max} onChange={(e) => setMax(e.target.value)} />
+          <br />
+          <ScoreCurveChart
+            curve={curve}
+            setCurve={setCurve}
+            min={min}
+            max={max}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={(_) => setOpen(false)}>Отменить</Button>
+          <Button onClick={setCurveHandler}>Применить</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 
