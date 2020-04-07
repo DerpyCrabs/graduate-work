@@ -19,36 +19,36 @@ const SIGNUP = gql`
     signup(email: $email, password: $password) @client
   }
 `
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   '@global': {
     body: {
-      backgroundColor: theme.palette.common.white
-    }
+      backgroundColor: theme.palette.common.white,
+    },
   },
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main
+    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(3)
+    marginTop: theme.spacing(3),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2)
-  }
+    margin: theme.spacing(3, 0, 2),
+  },
 }))
 
 const SignUpForm = () => {
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [signup, { data, error }] = useMutation(SIGNUP, {
-    variables: { email, password: pass }
+    variables: { email, password: pass },
   })
   if (data) {
     navigate('/')
@@ -56,66 +56,66 @@ const SignUpForm = () => {
 
   const classes = useStyles()
 
-  const handleSignup = e => {
+  const handleSignup = (e) => {
     e.preventDefault()
     e.stopPropagation()
     signup()
   }
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component='main' maxWidth='xs'>
       <CssBaseline />
       <div className={classes.paper}>
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5">
-          Sign up
+        <Typography component='h1' variant='h5'>
+          Регистрация
         </Typography>
         <form className={classes.form} noValidate>
-        <Grid container spacing={2}>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                variant="outlined"
+                variant='outlined'
                 required
                 fullWidth
-                id="email"
-                label="Email"
-                name="email"
+                id='email'
+                label='Электронная почта'
+                name='email'
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                autoComplete="email"
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete='email'
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                variant="outlined"
+                variant='outlined'
                 required
                 fullWidth
-                name="password"
-                label="Password"
-                type="password"
+                name='password'
+                label='Пароль'
+                type='password'
                 value={pass}
-                onChange={e => setPass(e.target.value)}
-                id="password"
-                autoComplete="current-password"
+                onChange={(e) => setPass(e.target.value)}
+                id='password'
+                autoComplete='current-password'
               />
             </Grid>
           </Grid>
           <Button
-            type="submit"
+            type='submit'
             fullWidth
-            variant="contained"
-            color="primary"
+            variant='contained'
+            color='primary'
             onClick={handleSignup}
             className={classes.submit}
           >
-           Sign up
+            Зарегистрировать аккаунт
           </Button>
-          <Grid container justify="flex-end">
+          <Grid container justify='flex-end'>
             <Grid item>
-              <Link component={ReachLink} to="/" variant="body2">
-                Already signed up? Log in...
+              <Link component={ReachLink} to='/' variant='body2'>
+                Есть аккаунт? Войти...
               </Link>
             </Grid>
           </Grid>

@@ -66,7 +66,7 @@ const LoginForm = () => {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component='h1' variant='h5'>
-          Sign in
+          Вход в аккаунт
         </Typography>
         <form className={classes.form} noValidate>
           <TextField
@@ -75,7 +75,7 @@ const LoginForm = () => {
             required
             fullWidth
             id='email'
-            label='Email'
+            label='Электронная почта'
             name='email'
             autoComplete='email'
             value={email}
@@ -88,7 +88,7 @@ const LoginForm = () => {
             required
             fullWidth
             name='password'
-            label='Password'
+            label='Пароль'
             type='password'
             value={pass}
             onChange={(e) => setPass(e.target.value)}
@@ -97,7 +97,7 @@ const LoginForm = () => {
           />
           <FormControlLabel
             control={<Checkbox value='remember' color='primary' />}
-            label='Remember me'
+            label='Запомнить'
           />
           <Button
             type='submit'
@@ -107,12 +107,12 @@ const LoginForm = () => {
             className={classes.submit}
             onClick={handleLogin}
           >
-            Log in
+            Войти
           </Button>
         </form>
         <Grid container justify='flex-end'>
           <Link component={ReachLink} to='/signup' variant='body2'>
-            {"Don't have an account? Sign up..."}
+            {'Нет аккаунта? Зарегистрироваться...'}
           </Link>
         </Grid>
       </div>

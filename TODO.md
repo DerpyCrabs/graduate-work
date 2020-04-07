@@ -3,7 +3,6 @@
 - olympiad taking (p)
 - olympiad results (p)
 - support submitting full solution and choose what task answer to use
-- translate into russian
 
 # teacher
 

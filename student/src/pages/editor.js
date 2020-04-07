@@ -17,7 +17,7 @@ import {
   Select,
   MenuItem,
   Typography,
-  Slider
+  Slider,
 } from '@material-ui/core'
 import TestDescription from '../components/test-description'
 import { useQuery, useMutation } from '@apollo/react-hooks'
@@ -48,7 +48,7 @@ const lang = {
   C: 'c_cpp',
   Clojure: 'clojure',
   Python: 'python',
-  Rust: 'rust'
+  Rust: 'rust',
 }
 export default function Editor({ test }) {
   const [language, setLanguage] = React.useState('JS')
@@ -56,7 +56,7 @@ export default function Editor({ test }) {
   const [code, setCode] = React.useState('console.log("hello")')
   const [submitCode, { data: work_id }] = useMutation(SUBMIT)
   const { data } = useQuery(RESULT_QUERY, {
-    pollInterval: 1000
+    pollInterval: 1000,
   })
 
   let errors = null
@@ -64,7 +64,7 @@ export default function Editor({ test }) {
   if (work_id) {
     console.log(data)
     const work = data.work_queue.queue.filter(
-      work => work.id === work_id.work_queue.add_work.id
+      (work) => work.id === work_id.work_queue.add_work.id
     )
     if (work.length === 1) {
       errors = work[0].errors
@@ -85,7 +85,7 @@ export default function Editor({ test }) {
             theme='github'
             value={code}
             fontSize={fontSize}
-            onChange={s => setCode(s)}
+            onChange={(s) => setCode(s)}
             name='unique_id'
             height='100%'
             width='100%'
@@ -99,7 +99,7 @@ export default function Editor({ test }) {
               maxWidth: '100%',
               border: 'solid 1px black',
               borderTop: 0,
-              borderRight: 0
+              borderRight: 0,
             }}
           >
             <Paper style={{ height: '100%', padding: 10 }}>
@@ -114,23 +114,23 @@ export default function Editor({ test }) {
               border: 'solid 1px black',
               borderTop: 0,
               borderRight: 0,
-              borderBottom: 0
+              borderBottom: 0,
             }}
           >
             <Paper style={{ height: '100%', padding: 10 }}>
               {work_id && errors && stage && (
                 <div>
                   {errors.length === 0 && stage === 'Done' ? (
-                    <div>You've completed the test</div>
+                    <div>Задача решена</div>
                   ) : (
                     <div>
                       {stage === 'Done' ? (
                         <div>
-                          Got {errors.length} errors in {test.checks.length}{' '}
-                          tests
+                          Получено {errors.length} ошибок в {test.checks.length}{' '}
+                          тестах
                         </div>
                       ) : (
-                        <div>Current stage: {stage}</div>
+                        <div>Этап проверки: {stage}</div>
                       )}
                     </div>
                   )}
@@ -148,7 +148,7 @@ export default function Editor({ test }) {
         <Toolbar>
           <Select
             value={language}
-            onChange={e => setLanguage(e.target.value)}
+            onChange={(e) => setLanguage(e.target.value)}
             style={{ color: 'white' }}
           >
             <MenuItem value='JS'>JavaScript</MenuItem>
@@ -161,11 +161,11 @@ export default function Editor({ test }) {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              paddingLeft: 16
+              paddingLeft: 16,
             }}
           >
             <Typography style={{ fontSize: 14, margin: 'auto' }} gutterBottom>
-              Font size
+              Размер шрифта
             </Typography>
             <Slider
               value={fontSize}
@@ -178,7 +178,7 @@ export default function Editor({ test }) {
           </div>
           <div style={{ flexGrow: 1 }} />
           <Button edge='end' color='inherit' onClick={handleSubmit}>
-            Submit
+            Отправить на проверку
           </Button>
         </Toolbar>
       </AppBar>
