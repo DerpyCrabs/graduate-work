@@ -104,7 +104,10 @@ module.exports = {
   `,
   Query: {
     olympiads: async () =>
-      query('SELECT * FROM olympiads', []).then((rows) =>
+      query(
+        'SELECT * FROM olympiads ORDER BY start_at ASC, done_at ASC',
+        []
+      ).then((rows) =>
         rows.map((olympiad) => ({
           ...olympiad,
           recruitment_type: olympiad.recruitment_type === 1 ? 'Closed' : 'Open',
