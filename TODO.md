@@ -1,8 +1,6 @@
 # student
 
 - main page (p)
-- team making
-- team invites
 - olympiad taking (p)
 - olympiad results (p)
 - support submitting full solution and choose what task answer to use

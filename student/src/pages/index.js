@@ -19,9 +19,15 @@ import {
   TableRow,
   TableBody,
   TableCell,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@material-ui/core'
 import { fade, makeStyles } from '@material-ui/core/styles'
 import Results from './results'
+import OlympiadParticipation from '../components/olympiad-participation'
 
 const LOGOUT = gql`
   mutation logout {
@@ -195,7 +201,6 @@ const IndexPage = () => {
           .flat()
           .includes(data.me.email))
   )
-  // Add team support and team creation
   return (
     <Grid container>
       <Tabs
@@ -227,15 +232,10 @@ const IndexPage = () => {
                   {new Date(parseInt(olympiad.start_at)).toLocaleString()}
                 </TableCell>
                 <TableCell>
-                  {olympiad.recruitment_type === 'Open' &&
-                  olympiad.teams === 1 &&
-                  olympiad.participants
-                    .map((p) => p.name)
-                    .includes(data.me.email) ? (
-                    <Button disabled>Заявка на участие подана</Button>
-                  ) : (
-                    <Apply olympiad={olympiad} />
-                  )}
+                  <OlympiadParticipation
+                    olympiad={olympiad}
+                    email={data.me.email}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -297,7 +297,7 @@ const IndexPage = () => {
     </Grid>
   )
 }
-const Apply = ({ olympiad }) => {
+export const Apply = ({ olympiad }) => {
   const [apply] = useMutation(gql`
     mutation apply($olympiad_id: String!) {
       olympiads {
@@ -317,6 +317,140 @@ const Apply = ({ olympiad }) => {
     <Button variant='contained' onClick={applyHandler}>
       Подать заявку на участие
     </Button>
+  )
+}
+export const AcceptInvite = ({ participant }) => {
+  const [accept] = useMutation(gql`
+    mutation accept($participant_id: String!) {
+      olympiads {
+        accept_invite(participant_id: $participant_id)
+      }
+    }
+  `)
+  const acceptHandler = () => {
+    accept({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        participant_id: participant,
+      },
+    })
+  }
+  return (
+    <Button variant='contained' onClick={acceptHandler}>
+      Принять приглашение на участие
+    </Button>
+  )
+}
+export const CreateTeam = ({ olympiad }) => {
+  const [create] = useMutation(gql`
+    mutation create($olympiad_id: String!, $name: String!) {
+      olympiads {
+        create_team(olympiad_id: $olympiad_id, name: $name)
+      }
+    }
+  `)
+  const [name, setName] = React.useState('')
+  const [open, setOpen] = React.useState(false)
+  const createHandler = () => {
+    create({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        olympiad_id: olympiad.id,
+        name,
+      },
+    })
+    setOpen(false)
+  }
+  return (
+    <>
+      <Button variant='contained' onClick={(_) => setOpen(true)}>
+        Создать команду
+      </Button>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Создание команды</DialogTitle>
+        <DialogContent>
+          Название команды:{' '}
+          <TextField value={name} onChange={(e) => setName(e.target.value)} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={(_) => setOpen(false)}>Отменить</Button>
+          <Button onClick={createHandler}>Создать</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+export function TeamInvite({ participant }) {
+  const { loading, data } = useQuery(gql`
+    {
+      users {
+        email
+        role
+      }
+    }
+  `)
+  const [open, setOpen] = React.useState(false)
+  const [invite] = useMutation(gql`
+    mutation invite($participant_id: String!, $user_email: String!) {
+      olympiads {
+        invite_to_team(participant_id: $participant_id, user_email: $user_email)
+      }
+    }
+  `)
+  const inviteHandler = (email) => {
+    invite({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        participant_id: participant.id,
+        user_email: email,
+      },
+    })
+  }
+  if (loading) {
+    return null
+  }
+  return (
+    <>
+      <Button variant='contained' onClick={(_) => setOpen(true)}>
+        Пригласить участников команды
+      </Button>
+
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Приглашение участников команды</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableBody>
+              {data.users
+                .filter((u) => u.role === 'student')
+                .map(({ email }) => (
+                  <TableRow key={email}>
+                    <TableCell>{email}</TableCell>
+                    <TableCell>
+                      {participant.users
+                        .map((u) => u.user.email)
+                        .includes(email) ? (
+                        participant.users.find((u) => u.user.email === email)
+                          .consent ? (
+                          <Button disabled>Принял приглашение</Button>
+                        ) : (
+                          <Button disabled>Приглашен</Button>
+                        )
+                      ) : (
+                        <Button
+                          color='primary'
+                          onClick={(_) => inviteHandler(email)}
+                        >
+                          Пригласить
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 const Index = () => {

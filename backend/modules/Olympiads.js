@@ -484,7 +484,7 @@ module.exports = {
             name,
             parseInt(start_at),
             parseInt(done_at),
-            recruitment_type === 'Closed' ? 1 : 0,
+            teams !== 1 ? 0 : recruitment_type === 'Closed' ? 1 : 0,
             teams,
           ]
         )
