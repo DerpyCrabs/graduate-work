@@ -28,6 +28,7 @@ import {
 import { fade, makeStyles } from '@material-ui/core/styles'
 import Results from './results'
 import OlympiadParticipation from '../components/olympiad-participation'
+import Olympiad from './olympiad'
 
 const LOGOUT = gql`
   mutation logout {
@@ -165,12 +166,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const IndexPage = () => {
+const OlympiadsIndex = ({ data }) => {
   const [tab, setTab] = React.useState('open')
-  const { loading, data } = useQuery(OLYMPIADS_QUERY)
-  if (loading) {
-    return null
-  }
   const openOlympiads = data.olympiads.filter(
     (o) =>
       o.stage === 'Created' &&
@@ -183,7 +180,8 @@ const IndexPage = () => {
     (o) =>
       o.stage === 'Ongoing' &&
       o.participants
-        .map((p) => p.users.filter((u) => u.consent).map((u) => u.user.email))
+        .filter((p) => p.users.every((u) => u.consent))
+        .map((p) => p.users.map((u) => u.user.email))
         .flat()
         .includes(data.me.email)
   )
@@ -261,7 +259,13 @@ const IndexPage = () => {
                   {new Date(parseInt(olympiad.done_at)).toLocaleString()}
                 </TableCell>
                 <TableCell>
-                  <Button variant='contained'>Перейти к выполнению</Button>
+                  <Button
+                    variant='contained'
+                    component={ReachLink}
+                    to={`/olympiad-${olympiad.id}`}
+                  >
+                    Перейти к выполнению
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -295,6 +299,29 @@ const IndexPage = () => {
         </Table>
       )}
     </Grid>
+  )
+}
+const IndexPage = () => {
+  const { loading, data } = useQuery(OLYMPIADS_QUERY)
+  if (loading) {
+    return null
+  }
+  const ongoingOlympiads = data.olympiads.filter(
+    (o) =>
+      o.stage === 'Ongoing' &&
+      o.participants
+        .filter((p) => p.users.every((u) => u.consent))
+        .map((p) => p.users.map((u) => u.user.email))
+        .flat()
+        .includes(data.me.email)
+  )
+  return (
+    <Router>
+      <OlympiadsIndex data={data} path='/' />
+      {ongoingOlympiads.map((olympiad) => (
+        <Olympiad olympiad={olympiad} path={`/olympiad-${olympiad.id}`} />
+      ))}
+    </Router>
   )
 }
 export const Apply = ({ olympiad }) => {
