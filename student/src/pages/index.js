@@ -286,7 +286,7 @@ const IndexPage = () => {
                   {olympiad.stage === 'Review' ? (
                     <div>Ожидание результатов</div>
                   ) : (
-                    <Results id={5} />
+                    <Results olympiad={olympiad} email={data.me.email} />
                   )}
                 </TableCell>
               </TableRow>

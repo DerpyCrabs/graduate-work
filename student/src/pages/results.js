@@ -12,40 +12,49 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
 } from '@material-ui/core'
 
-export default function Results({ id }) {
-  const results = {
-    name: 'Олимпиада',
-    results: {
-      participants: [
-        { name: 'Участник 1', place: 1 },
-        { name: 'Участник 2', place: 2 }
-      ]
-    }
-  }
-  results.results.participants.sort((a, b) => a.place - b.place)
+export default function Results({ olympiad, email }) {
+  let results = olympiad.leaderboard
+  results.sort((a, b) => a.place - b.place)
   const [open, setOpen] = React.useState(false)
   return (
     <>
-      <Button variant='contained' onClick={_ => setOpen(!open)}>
+      <Button variant='contained' onClick={(_) => setOpen(!open)}>
         Результаты
       </Button>
-      <Dialog onClose={_ => setOpen(false)} open={open}>
-        <DialogTitle>Результаты олимпиады "{results.name}"</DialogTitle>
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Результаты олимпиады "{olympiad.name}"</DialogTitle>
         <DialogContent>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Участник</TableCell>
+                <TableCell>Количество очков</TableCell>
                 <TableCell>Место</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {results.results.participants.map(({ name, place }) => (
-                <TableRow key={`${name}-${place}`}>
-                  <TableCell>{name}</TableCell>
+              {results.map(({ participant, score, place }) => (
+                <TableRow
+                  key={`${participant.name}-${place}`}
+                  style={{
+                    backgroundColor: participant.users
+                      .map((u) => u.user.email)
+                      .includes(email)
+                      ? 'beige'
+                      : 'white',
+                  }}
+                >
+                  <TableCell>
+                    {olympiad.teams === 1
+                      ? participant.name
+                      : `${participant.name} (${participant.users
+                          .map((u) => u.user.email)
+                          .join(', ')})`}
+                  </TableCell>
+                  <TableCell>{score}</TableCell>
                   <TableCell>{place}</TableCell>
                 </TableRow>
               ))}
