@@ -115,6 +115,18 @@ const OLYMPIADS_QUERY = gql`
               email
             }
           }
+          submitted_solutions {
+            id
+            submitted_at
+            answers {
+              id
+              code
+              test {
+                id
+              }
+              score
+            }
+          }
         }
       }
     }
@@ -774,7 +786,13 @@ function Leaderboard({ olympiad }) {
                   <TableCell>{score}</TableCell>
                   <TableCell>{place}</TableCell>
                   <TableCell>
-                    <Review />
+                    <LeaderboardSolution
+                      solution={
+                        participant.submitted_solutions[
+                          participant.submitted_solutions.length - 1
+                        ]
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -786,6 +804,32 @@ function Leaderboard({ olympiad }) {
   )
 }
 
+function LeaderboardSolution({ solution }) {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <>
+      <Button size='small' onClick={(_) => setOpen(true)}>
+        Решение
+      </Button>
+
+      <Dialog onClose={(_) => setOpen(false)} open={open}>
+        <DialogTitle>Решение участника</DialogTitle>
+        <DialogContent>
+          {solution.answers.map((a) => (
+            <ExpansionPanel style={{ flexGrow: 1 }}>
+              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant='h6' style={{ fontSize: '1rem' }}>
+                  Задание {a.test.name} - {a.score}
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails>{a.code}</ExpansionPanelDetails>
+            </ExpansionPanel>
+          ))}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 function Tests({ olympiad }) {
   const { loading, data } = useQuery(gql`
     {

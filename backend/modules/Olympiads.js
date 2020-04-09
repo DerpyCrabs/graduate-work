@@ -129,7 +129,7 @@ module.exports = {
       ),
     submitted_solutions: async ({ id }) =>
       await query(
-        'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1',
+        'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1 ORDER BY submitted_at ASC',
         [id]
       ),
     name: async ({ id }) =>
