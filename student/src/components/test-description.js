@@ -6,12 +6,12 @@ export default function TestDescription({ test }) {
       <h3>{test.name}</h3>
       {test.description}
       <ul>
-        <b>Expected behavior:</b>
+        <b>Ожидаемое поведение:</b>
         {test.checks
           .slice(0, Math.ceil(test.checks.length / 2))
           .map(({ expected, input }) => (
             <li>
-              For input "{input}" returns "{expected}"
+              Для ввода "{input}" возвращает "{expected}"
             </li>
           ))}
       </ul>

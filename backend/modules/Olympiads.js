@@ -132,6 +132,12 @@ module.exports = {
         'SELECT * FROM olympiad_submitted_solutions WHERE participant_id = $1',
         [id]
       ),
+    name: async ({ id }) =>
+      (
+        await query('SELECT name FROM olympiad_participants WHERE id = $1', [
+          id,
+        ])
+      )[0].name,
   },
   SubmittedSolution: {
     answers: async ({ id }) =>
@@ -188,7 +194,7 @@ module.exports = {
           [submitted_solution[0].id]
         )
         const score = answers.reduce((acc, answer) => acc + answer.score, 0)
-        leaderboard.push({ participant: { id }, score })
+        leaderboard.push({ participant: { id: participant_id }, score })
       }
 
       leaderboard.sort((a, b) => b.score - a.score)
@@ -286,11 +292,17 @@ module.exports = {
             [test_id, olympiad_id]
           )
         )[0].coefficient
+        return Math.ceil(
+          test_coefficient *
+            ((olympiad.max_score - olympiad.min_score) *
+              score_curve_coefficient +
+              olympiad.min_score)
+        )
       }
       const participant_id = (
         await query(
-          'SELECT olympiad_participant_id FROM olympiad_participant_teams WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1)',
-          [email]
+          'SELECT olympiad_participant_id FROM olympiad_participant_teams JOIN olympiad_participants ON olympiad_participant_id = olympiad_participants.id WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1) AND olympiad_id = $2',
+          [email, olympiad_id]
         )
       )[0].olympiad_participant_id
       const solution_id = (
@@ -333,12 +345,12 @@ module.exports = {
       }
       const participant_id = (
         await query(
-          'SELECT olympiad_participant_id FROM olympiad_participant_teams WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1)',
-          [email]
+          'SELECT olympiad_participant_id FROM olympiad_participant_teams JOIN olympiad_participants ON olympiad_participant_id = olympiad_participants.id WHERE participant_id = (SELECT id FROM users WHERE email = $1 LIMIT 1) AND olympiad_id = $2',
+          [email, olympiad_id]
         )
       )[0].olympiad_participant_id
       await query(
-        'INSERT INTO olympiad_test_answers (participant_id, test_id, code, score, submitted_at) VALUES ($1, $2, $3, NULL, now())',
+        'INSERT INTO olympiad_test_answers (participant_id, test_id, code) VALUES ($1, $2, $3)',
         [participant_id, test_id, code]
       )
       return 'done'

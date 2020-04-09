@@ -36,7 +36,7 @@ const LOGOUT = gql`
   }
 `
 
-const OLYMPIADS_QUERY = gql`
+export const OLYMPIADS_QUERY = gql`
   {
     me {
       email
@@ -73,8 +73,23 @@ const OLYMPIADS_QUERY = gql`
           }
           consent
         }
+        test_answers {
+          id
+          code
+          test {
+            id
+          }
+        }
         submitted_solutions {
           id
+          submitted_at
+          answers {
+            id
+            code
+            test {
+              id
+            }
+          }
         }
       }
       leaderboard {
@@ -319,7 +334,7 @@ const IndexPage = () => {
     <Router>
       <OlympiadsIndex data={data} path='/' />
       {ongoingOlympiads.map((olympiad) => (
-        <Olympiad olympiad={olympiad} path={`/olympiad-${olympiad.id}`} />
+        <Olympiad olympiad={olympiad} path={`/olympiad-${olympiad.id}/*`} />
       ))}
     </Router>
   )

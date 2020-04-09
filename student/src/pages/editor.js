@@ -22,6 +22,8 @@ import {
 import TestDescription from '../components/test-description'
 import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import { OLYMPIADS_QUERY } from './index'
+import { navigate } from '@reach/router'
 
 const SUBMIT = gql`
   mutation add_work($language: String!, $text: String!, $type_id: String!) {
@@ -32,6 +34,23 @@ const SUBMIT = gql`
     }
   }
 `
+
+const SUBMIT_ANSWER = gql`
+  mutation submit_answer(
+    $olympiad_id: String!
+    $code: String!
+    $test_id: String!
+  ) {
+    olympiads {
+      submit_test_answer(
+        olympiad_id: $olympiad_id
+        code: $code
+        test_id: $test_id
+      )
+    }
+  }
+`
+
 const RESULT_QUERY = gql`
   {
     work_queue {
@@ -50,11 +69,12 @@ const lang = {
   Python: 'python',
   Rust: 'rust',
 }
-export default function Editor({ test }) {
+export default function Editor({ olympiad, test }) {
   const [language, setLanguage] = React.useState('JS')
   const [fontSize, setFontSize] = React.useState(16)
   const [code, setCode] = React.useState('console.log("hello")')
   const [submitCode, { data: work_id }] = useMutation(SUBMIT)
+  const [submitAnswer] = useMutation(SUBMIT_ANSWER)
   const { data } = useQuery(RESULT_QUERY, {
     pollInterval: 1000,
   })
@@ -73,7 +93,14 @@ export default function Editor({ test }) {
   }
 
   const handleSubmit = () => {
-    submitCode({ variables: { text: code, language, type_id: test.id } })
+    submitCode({ variables: { text: code, language, type_id: test.test.id } })
+  }
+  const handleSubmitAnswer = () => {
+    submitAnswer({
+      variables: { code, olympiad_id: olympiad.id, test_id: test.test.id },
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+    })
+    navigate(`/olympiad-${olympiad.id}`)
   }
 
   return (
@@ -103,7 +130,7 @@ export default function Editor({ test }) {
             }}
           >
             <Paper style={{ height: '100%', padding: 10 }}>
-              <TestDescription test={test} />
+              <TestDescription test={test.test} />
             </Paper>
           </Grid>
           <Grid
@@ -177,6 +204,15 @@ export default function Editor({ test }) {
             />
           </div>
           <div style={{ flexGrow: 1 }} />
+          {work_id &&
+            errors &&
+            stage &&
+            errors.length === 0 &&
+            stage === 'Done' && (
+              <Button edge='end' color='inherit' onClick={handleSubmitAnswer}>
+                Принять решение
+              </Button>
+            )}
           <Button edge='end' color='inherit' onClick={handleSubmit}>
             Отправить на проверку
           </Button>
