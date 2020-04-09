@@ -102,13 +102,13 @@ export default function SolutionSubmit({ olympiad, email }) {
                   ))}
                 </Select>
                 {selectedAnswers[i] && (
-                  <div>
+                  <code>
                     {
                       getSubmittedAnswers(olympiad, p.id, t.test.id).find(
                         (sa) => sa.id === selectedAnswers[i]
                       ).code
                     }
-                  </div>
+                  </code>
                 )}
               </ExpansionPanelDetails>
             </ExpansionPanel>

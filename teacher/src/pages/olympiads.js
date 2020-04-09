@@ -99,6 +99,10 @@ const OLYMPIADS_QUERY = gql`
             test {
               id
               name
+              checks {
+                input
+                expected
+              }
             }
             score
           }
@@ -123,6 +127,11 @@ const OLYMPIADS_QUERY = gql`
               code
               test {
                 id
+                name
+                checks {
+                  input
+                  expected
+                }
               }
               score
             }
@@ -232,7 +241,9 @@ export default function Olympiads() {
                     !(olympiad.stage === 'Ended') && (
                       <Participants olympiad={olympiad} />
                     )}
-                  {olympiad.stage === 'Review' && <Review />}
+                  {olympiad.stage === 'Review' && (
+                    <Review olympiad={olympiad} />
+                  )}
                   {olympiad.stage === 'Ended' && (
                     <Leaderboard olympiad={olympiad} />
                   )}
@@ -708,13 +719,7 @@ function InviteCollaborator({ olympiad }) {
     </>
   )
 }
-function Review({ id }) {
-  const scores = [
-    { name: 'Студент 1', score: 500, place: 1 },
-    { name: 'Студент 2', score: 550, place: 2 },
-    { name: 'Студент 3', score: 600, place: 3 },
-  ]
-
+function Review({ olympiad }) {
   const [open, setOpen] = React.useState(false)
   return (
     <>
@@ -729,19 +734,15 @@ function Review({ id }) {
             <TableHead>
               <TableRow>
                 <TableCell>Имя</TableCell>
-                <TableCell>Баллы</TableCell>
-                <TableCell>Предварительное место</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {scores.map(({ name, score, place }) => (
-                <TableRow key={name}>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{score}</TableCell>
-                  <TableCell>{place}</TableCell>
+              {olympiad.participants.map((p) => (
+                <TableRow key={p.name}>
+                  <TableCell>{p.name}</TableCell>
                   <TableCell>
-                    <ParticipantReview />
+                    <ParticipantReview participant={p} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -979,74 +980,94 @@ function Tests({ olympiad }) {
   )
 }
 
-function ParticipantReview({ id }) {
-  const tests = [
-    {
-      name: 'Консольный ввод',
-      code: 'some code',
-      score: 0,
-      checks: [
-        { input: 5, expected: 5, actual: 7 },
-        { input: 10, expected: 10, actual: 10 },
-      ],
-    },
-    {
-      name: 'Числа Фиббоначи',
-      code: 'some code 2',
-      score: 500,
-      checks: [
-        { input: 5, expected: 10, actual: 5 },
-        { input: 10, expected: 10, actual: 10 },
-      ],
-    },
-  ]
+function ParticipantReview({ participant }) {
   const [open, setOpen] = React.useState(false)
+  const [shown, setShown] = React.useState(
+    participant.submitted_solutions[participant.submitted_solutions.length - 1]
+      .submitted_at
+  )
+  const [setAnswerScore] = useMutation(gql`
+    mutation set_score($test_answer_id: String!, $score: Int!) {
+      olympiads {
+        set_test_answer_score(test_answer_id: $test_answer_id, score: $score)
+      }
+    }
+  `)
+  const handleScoreChange = (test_answer_id, score) => {
+    try {
+      parseInt(score)
+    } catch (e) {
+      return
+    }
+    setAnswerScore({
+      refetchQueries: [{ query: OLYMPIADS_QUERY }],
+      variables: {
+        test_answer_id,
+        score: parseInt(score),
+      },
+    })
+  }
   return (
     <>
       <Button color='primary' onClick={(_) => setOpen(true)}>
-        Решение
+        Решение участника
       </Button>
 
       <Dialog onClose={(_) => setOpen(false)} open={open}>
-        <DialogTitle>Решение студента "Студент 1"</DialogTitle>
+        <DialogTitle>Решения участника {participant.name}</DialogTitle>
         <DialogContent>
-          {tests.map((test) => (
-            <ExpansionPanel style={{ flexGrow: 1 }}>
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant='h6' style={{ fontSize: '1rem' }}>
-                  Задание "{test.name}"{' - '}
-                  {test.score === 0 ? 'решено не верно' : 'решено верно'}
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
-                <Typography>Код решения:</Typography>
-                <Typography>{test.code}</Typography>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Ввод</TableCell>
-                      <TableCell>Ожидаемый вывод</TableCell>
-                      <TableCell>Вывод программы</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {test.checks.map((check) => (
+          Решение, отправленное{' '}
+          <Select value={shown} onChange={(e) => setShown(e.target.value)}>
+            {participant.submitted_solutions.map((s) => (
+              <MenuItem value={s.submitted_at}>
+                {new Date(parseInt(s.submitted_at)).toLocaleString()}
+              </MenuItem>
+            ))}
+          </Select>
+          {participant.submitted_solutions
+            .find((s) => s.submitted_at === shown)
+            .answers.map((a) => (
+              <ExpansionPanel style={{ flexGrow: 1 }}>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant='h6' style={{ fontSize: '1rem' }}>
+                    Задание "{a.test.name}"{' - '}
+                    {a.score}
+                  </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+                  <Typography>Код решения:</Typography>
+                  <code>{a.code}</code>
+                  <Table>
+                    <TableHead>
                       <TableRow>
-                        <TableCell>{check.input}</TableCell>
-                        <TableCell>{check.expected}</TableCell>
-                        <TableCell>{check.actual}</TableCell>
+                        <TableCell>Ввод</TableCell>
+                        <TableCell>Ожидаемый вывод</TableCell>
+                        <TableCell>Вывод программы</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <TextField
-                  value={test.score}
-                  type='number'
-                  label='Баллы за задание'
-                />
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-          ))}
+                    </TableHead>
+                    <TableBody>
+                      {a.test.checks.map((check) => (
+                        <TableRow>
+                          <TableCell>{check.input}</TableCell>
+                          <TableCell>{check.expected}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {shown ===
+                    participant.submitted_solutions[
+                      participant.submitted_solutions.length - 1
+                    ].submitted_at && (
+                    <TextField
+                      value={a.score}
+                      onChange={(e) => handleScoreChange(a.id, e.target.value)}
+                      type='number'
+                      label='Баллы за задание'
+                    />
+                  )}
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            ))}
         </DialogContent>
       </Dialog>
     </>

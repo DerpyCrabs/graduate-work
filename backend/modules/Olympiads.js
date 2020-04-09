@@ -142,7 +142,7 @@ module.exports = {
   SubmittedSolution: {
     answers: async ({ id }) =>
       await query(
-        'SELECT olympiad_test_answers.id AS id, test_id, code, score FROM olympiad_submitted_solution_answers JOIN olympiad_test_answers ON answer_id = olympiad_test_answers.id WHERE solution_id = $1',
+        'SELECT olympiad_submitted_solution_answers.id AS id, test_id, code, score FROM olympiad_submitted_solution_answers JOIN olympiad_test_answers ON answer_id = olympiad_test_answers.id WHERE solution_id = $1',
         [id]
       ),
   },
