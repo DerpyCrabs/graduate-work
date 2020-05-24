@@ -1,21 +1,20 @@
-import React from 'react'
-import { Link as ReachLink, Router } from '@reach/router'
-import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
-import Toolbar from '@material-ui/core/Toolbar'
-import IconButton from '@material-ui/core/IconButton'
-import HomeIcon from '@material-ui/icons/Home'
-import Button from '@material-ui/core/Button'
-import MenuItem from '@material-ui/core/MenuItem'
-import Menu from '@material-ui/core/Menu'
+import React from 'react'
+import { useMutation, useQuery } from '@apollo/react-hooks'
+import { Tab, TabPanel, Tabs } from '@material-ui/core'
 import AppBar from '@material-ui/core/AppBar'
-import { Tabs, Tab, TabPanel } from '@material-ui/core'
-import WorkQueue from './work-queue'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import Toolbar from '@material-ui/core/Toolbar'
+import { fade, makeStyles } from '@material-ui/core/styles'
+import HomeIcon from '@material-ui/icons/Home'
+import { Link as ReachLink, Router } from '@reach/router'
+import Graphics from './graphics'
 import Plugins from './plugins'
 import Users from './users'
-import License from './license'
-import Graphics from './graphics'
-import { fade, makeStyles } from '@material-ui/core/styles'
+import WorkQueue from './work-queue'
 
 const LOGOUT = gql`
   mutation logout {
@@ -102,7 +101,6 @@ const IndexPage = () => {
       <Tab label='Очередь задач' component={ReachLink} to='/work-queue' />
       <Tab label='Плагины' component={ReachLink} to='/plugins' />
       <Tab label='Пользователи' component={ReachLink} to='/users' />
-      <Tab label='Управление лицензией' component={ReachLink} to='/license' />
       <Tab label='Статистика' component={ReachLink} to='/graphics' />
     </Tabs>
   )
@@ -157,7 +155,6 @@ const Index = () => {
         <WorkQueue path='/work-queue' />
         <Plugins path='/plugins' />
         <Users path='/users' />
-        <License path='/license' />
         <Graphics path='/graphics' />
       </Router>
     </div>

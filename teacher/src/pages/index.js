@@ -1,18 +1,19 @@
-import React from 'react'
-import { Link as ReachLink, Router } from '@reach/router'
-import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
-import Toolbar from '@material-ui/core/Toolbar'
-import IconButton from '@material-ui/core/IconButton'
-import HomeIcon from '@material-ui/icons/Home'
-import Button from '@material-ui/core/Button'
-import MenuItem from '@material-ui/core/MenuItem'
-import Menu from '@material-ui/core/Menu'
+import React from 'react'
+import { useMutation, useQuery } from '@apollo/react-hooks'
+import { Tab, TabPanel, Tabs } from '@material-ui/core'
 import AppBar from '@material-ui/core/AppBar'
-import { Tabs, Tab, TabPanel } from '@material-ui/core'
-import Tests from './tests'
-import Olympiads from './olympiads'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import Toolbar from '@material-ui/core/Toolbar'
 import { fade, makeStyles } from '@material-ui/core/styles'
+import HomeIcon from '@material-ui/icons/Home'
+import { Link as ReachLink, Router } from '@reach/router'
+import CWIndex from './CW_index'
+import Olympiads from './olympiads'
+import Tests from './tests'
 
 const LOGOUT = gql`
   mutation logout {
@@ -150,6 +151,7 @@ const Index = () => {
         <IndexPage path='/' />
         <Olympiads path='/olympiads' />
         <Tests path='/tests' />
+        <CWIndex path='/cw' />
       </Router>
     </div>
   )

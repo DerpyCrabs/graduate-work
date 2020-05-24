@@ -1,0 +1,50 @@
+type Query {
+me: User // Аутентифицированный преподаватель
+work_queue: [Work!]! // Очередь проверки
+}
+type Mutation {
+signup (email: String!, password: String!): String // регистрация
+login (email: String!, password: String!): String // аутентификация
+add_work(student: String!, language: String!, type_id: String!, text: String!): Work! // добавление задачи на проверку
+tests: TestsMutation! // мутации сценариев тестирования
+}
+type User {
+email: String! // электронная почта преподавателя
+results: [TestCompletion!]! // результаты отправленных решений
+}
+type TestCompletion {
+test_id: String! 
+test_name: String! // название сценария тестирования
+student_email: String! // электронная почта автора решения
+errors: [String!] // ошибки компиляции и интерпретации если есть
+done_at: String! // когда закончена проверка
+language: String! // язык выполнения
+}
+type TestsMutation {
+add_test (name: String!, description: String!): Test! // создание сценария тестирования
+add_check (test_id: String!, input: String!, expected: String!): String // добавление проверки к сценарию
+remove_check (test_id: String!, input: String!, expected: String!): String // удаление проверки из сценария
+}
+type TestCheck {
+input: String! // ввод тестируемой программы
+expected: String! // ожидаемый вывод
+}
+type Test {
+id: String! // уникальный идентификатор теста
+name: String! // название теста
+description: String! // описание
+checks: [TestCheck!]! // проверки, входящие в тест
+}
+enum WorkStage {
+WaitingForCompilation
+Compilation
+WaitingForRunning
+Running
+Testing
+Done
+}
+type Work {
+id: String! // идентификатор задачи на проверку
+language: String! // язык задачи
+stage: WorkStage! // этап выполнения задачи
+}

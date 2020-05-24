@@ -1,24 +1,24 @@
-import React from 'react'
-import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import React from 'react'
+import { useMutation, useQuery } from '@apollo/react-hooks'
 import {
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
+  Button,
   Dialog,
   DialogTitle,
-  TextField,
-  Button,
-  Select,
-  MenuItem,
-  Typography,
   ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
   ExpansionPanelActions,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
 } from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
@@ -176,14 +176,16 @@ export default function Tests() {
                     <TableRow>
                       <TableCell>Ввод</TableCell>
                       <TableCell>Ожидаемый вывод</TableCell>
+                      <TableCell>Максимальное время</TableCell>
                       <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {test.checks.map((check) => (
+                    {test.checks.map((check, i) => (
                       <TableRow>
                         <TableCell>{check.input}</TableCell>
                         <TableCell>{check.expected}</TableCell>
+                        <TableCell>{i == 0 ? '0:05' : '0:30'}</TableCell>
                         <TableCell>
                           <Button
                             onClick={(e) =>

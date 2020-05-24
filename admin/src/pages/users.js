@@ -1,19 +1,19 @@
-import React from 'react'
-import { useQuery, useMutation } from '@apollo/react-hooks'
 import gql from 'graphql-tag'
+import React from 'react'
+import { useMutation, useQuery } from '@apollo/react-hooks'
 import {
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
+  Button,
   Dialog,
   DialogTitle,
-  TextField,
-  Button,
-  Select,
   MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
 } from '@material-ui/core'
 
 const USERS_QUERY = gql`
@@ -119,7 +119,7 @@ export default function Users() {
                   <TableCell>
                     <Select value={role} onChange={changeRoleHandler(email)}>
                       <MenuItem value='student'>Участник</MenuItem>
-                      <MenuItem value='teacher'>Преподаватель</MenuItem>
+                      <MenuItem value='teacher'>Организатор</MenuItem>
                       <MenuItem value='admin'>Администратор</MenuItem>
                     </Select>
                   </TableCell>
